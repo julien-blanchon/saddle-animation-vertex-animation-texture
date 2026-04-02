@@ -1,0 +1,13 @@
+[package]
+name = "saddle-animation-vertex-animation-texture-example-multi-clip"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+bevy = { workspace = true }
+saddle-animation-vertex-animation-texture = { workspace = true }
+saddle-animation-vertex-animation-texture-example-support = { path = "../support" }
+
+[lints]
+workspace = true

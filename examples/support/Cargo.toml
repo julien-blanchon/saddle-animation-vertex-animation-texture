@@ -1,0 +1,12 @@
+[package]
+name = "saddle-animation-vertex-animation-texture-example-support"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+bevy = { workspace = true }
+saddle-animation-vertex-animation-texture = { workspace = true }
+
+[lints]
+workspace = true

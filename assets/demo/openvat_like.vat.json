@@ -1,0 +1,31 @@
+{
+  "os-remap": {
+    "Min": [-0.85, -0.1, -0.42],
+    "Max": [0.85, 1.75, 0.42],
+    "Frames": 72
+  },
+  "vertex_count": 81,
+  "texture_width": 81,
+  "texture_height": 72,
+  "rows_per_frame": 1,
+  "coordinate_system": "y_up_right_handed",
+  "playback_space": "local",
+  "packed_normals": false,
+  "animations": {
+    "idle": {
+      "start_frame": 0,
+      "end_frame": 23,
+      "looping": true
+    },
+    "gust": {
+      "start_frame": 24,
+      "end_frame": 47,
+      "looping": true
+    },
+    "burst": {
+      "start_frame": 48,
+      "end_frame": 71,
+      "looping": false
+    }
+  }
+}

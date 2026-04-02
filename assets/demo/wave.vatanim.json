@@ -1,0 +1,67 @@
+{
+  "format": "vertex_animation_texture@1",
+  "animation_mode": "soft_body_fixed_topology",
+  "vertex_count": 81,
+  "frame_count": 72,
+  "frames_per_second": 24.0,
+  "decode_bounds": {
+    "min": [-0.85, -0.1, -0.42],
+    "max": [0.85, 1.75, 0.42]
+  },
+  "animation_bounds": {
+    "min": [-0.9, -0.1, -0.45],
+    "max": [0.9, 1.8, 0.45]
+  },
+  "clips": [
+    {
+      "name": "idle",
+      "start_frame": 0,
+      "end_frame": 23,
+      "default_loop_mode": "loop",
+      "events": [
+        { "name": "crest", "frame": 12 }
+      ]
+    },
+    {
+      "name": "gust",
+      "start_frame": 24,
+      "end_frame": 47,
+      "default_loop_mode": "loop",
+      "events": [
+        { "name": "gust_peak", "frame": 11 }
+      ]
+    },
+    {
+      "name": "burst",
+      "start_frame": 48,
+      "end_frame": 71,
+      "default_loop_mode": "once",
+      "events": [
+        { "name": "flare", "frame": 8 },
+        { "name": "settle", "frame": 20 }
+      ]
+    }
+  ],
+  "position_texture": {
+    "relative_path": "wave_positions.png",
+    "width": 81,
+    "height": 72,
+    "rows_per_frame": 1,
+    "precision": "png8"
+  },
+  "normal_texture": {
+    "mode": "separate",
+    "encoding": "signed_normalized",
+    "texture": {
+      "relative_path": "wave_normals.png",
+      "width": 81,
+      "height": 72,
+      "rows_per_frame": 1,
+      "precision": "png8"
+    }
+  },
+  "coordinate_system": "y_up_right_handed",
+  "playback_space": "local",
+  "vertex_id_attribute": "uv1",
+  "position_encoding": "absolute_normalized_bounds"
+}
