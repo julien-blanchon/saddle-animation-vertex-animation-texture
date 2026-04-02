@@ -3,8 +3,8 @@ use approx::assert_abs_diff_eq;
 use super::*;
 use crate::{
     VatAnimationData, VatAnimationMode, VatClip, VatClipEvent, VatCoordinateSystem,
-    VatNormalTexture, VatPlaybackSpace, VatPositionEncoding, VatSourceFormat,
-    VatTextureDescriptor, VatTexturePrecision, VatVertexIdAttribute, decode_position_sample,
+    VatNormalTexture, VatPlaybackSpace, VatPositionEncoding, VatSourceFormat, VatTextureDescriptor,
+    VatTexturePrecision, VatVertexIdAttribute, decode_position_sample,
     parse_vat_animation_data_str,
 };
 
@@ -89,15 +89,7 @@ fn ping_pong_reverses_correctly() {
 
 #[test]
 fn clamp_forever_stays_pinned_without_pausing() {
-    let result = advance_clip_time(
-        0.95,
-        1.0,
-        true,
-        1.0,
-        0.25,
-        VatLoopMode::ClampForever,
-        1.0,
-    );
+    let result = advance_clip_time(0.95, 1.0, true, 1.0, 0.25, VatLoopMode::ClampForever, 1.0);
     assert_abs_diff_eq!(result.time_seconds, 1.0, epsilon = 0.0001);
     assert!(!result.should_pause);
     assert_eq!(result.finished_count, 1);
@@ -192,8 +184,8 @@ fn clip_frame_sampling_uses_absolute_frame_range() {
 fn bounds_decode_round_trips() {
     let animation = demo_animation();
     let target = Vec3::new(0.25, 1.0, -0.12);
-    let encoded =
-        (target - animation.decode_bounds_min) / (animation.decode_bounds_max - animation.decode_bounds_min);
+    let encoded = (target - animation.decode_bounds_min)
+        / (animation.decode_bounds_max - animation.decode_bounds_min);
     let decoded = decode_position_sample(encoded, &animation, Vec3::ZERO);
     assert_abs_diff_eq!(decoded.x, target.x, epsilon = 0.01);
     assert_abs_diff_eq!(decoded.y, target.y, epsilon = 0.01);

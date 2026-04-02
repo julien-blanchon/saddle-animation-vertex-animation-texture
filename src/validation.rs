@@ -34,7 +34,9 @@ pub enum VatValidationError {
         clip_name: String,
         event_name: String,
     },
-    #[error("position texture layout cannot store {vertex_count} vertices in {capacity} texels per frame")]
+    #[error(
+        "position texture layout cannot store {vertex_count} vertices in {capacity} texels per frame"
+    )]
     PositionTextureTooSmall { vertex_count: u32, capacity: u32 },
     #[error(
         "position texture height/rows_per_frame do not cover all baked frames (height={height}, rows_per_frame={rows_per_frame}, frame_count={frame_count})"
@@ -54,7 +56,9 @@ pub enum VatValidationError {
     InvalidNormalTextureLayout,
     #[error("packed normals require a non-zero row_offset")]
     InvalidPackedNormalRowOffset,
-    #[error("rigid-body VAT metadata is present, but the v0.1 runtime only supports fixed-topology soft-body VAT")]
+    #[error(
+        "rigid-body VAT metadata is present, but the v0.1 runtime only supports fixed-topology soft-body VAT"
+    )]
     UnsupportedAnimationMode,
 }
 
@@ -68,7 +72,9 @@ pub enum VatMeshValidationError {
     MissingUv0,
     #[error("VAT playback requires Mesh::ATTRIBUTE_UV_1 (the DCC UV2 channel) for vertex lookup")]
     MissingUv1,
-    #[error("mesh vertex count {mesh_vertex_count} does not match metadata vertex count {metadata_vertex_count}")]
+    #[error(
+        "mesh vertex count {mesh_vertex_count} does not match metadata vertex count {metadata_vertex_count}"
+    )]
     VertexCountMismatch {
         mesh_vertex_count: usize,
         metadata_vertex_count: u32,
@@ -98,7 +104,10 @@ pub fn validate_animation_data(animation: &VatAnimationData) -> Result<(), VatVa
     if !valid_bounds(animation.decode_bounds_min, animation.decode_bounds_max) {
         return Err(VatValidationError::InvalidDecodeBounds);
     }
-    if !valid_bounds(animation.animation_bounds_min, animation.animation_bounds_max) {
+    if !valid_bounds(
+        animation.animation_bounds_min,
+        animation.animation_bounds_max,
+    ) {
         return Err(VatValidationError::InvalidAnimationBounds);
     }
     if animation.position_capacity_per_frame() < animation.vertex_count {
@@ -210,8 +219,10 @@ pub fn validate_mesh_for_animation(
 
 #[must_use]
 pub fn metadata_aabb(animation: &VatAnimationData) -> Aabb {
-    let min = convert_coordinate_system(animation.animation_bounds_min, animation.coordinate_system);
-    let max = convert_coordinate_system(animation.animation_bounds_max, animation.coordinate_system);
+    let min =
+        convert_coordinate_system(animation.animation_bounds_min, animation.coordinate_system);
+    let max =
+        convert_coordinate_system(animation.animation_bounds_max, animation.coordinate_system);
     Aabb::from_min_max(min, max)
 }
 
@@ -250,8 +261,8 @@ pub fn decode_position_sample(
     animation: &VatAnimationData,
     proxy_position: Vec3,
 ) -> Vec3 {
-    let decoded_source =
-        animation.decode_bounds_min + encoded * (animation.decode_bounds_max - animation.decode_bounds_min);
+    let decoded_source = animation.decode_bounds_min
+        + encoded * (animation.decode_bounds_max - animation.decode_bounds_min);
     let decoded = convert_coordinate_system(decoded_source, animation.coordinate_system);
     match animation.position_encoding {
         VatPositionEncoding::AbsoluteNormalizedBounds => decoded,

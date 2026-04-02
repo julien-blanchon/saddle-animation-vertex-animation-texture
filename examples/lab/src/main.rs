@@ -10,13 +10,13 @@ use bevy::prelude::*;
 use bevy::remote::{RemotePlugin, http::RemoteHttpPlugin};
 #[cfg(feature = "dev")]
 use bevy_brp_extras::BrpExtrasPlugin;
-use support::{
-    demo_app, load_demo_assets, spawn_demo_camera, spawn_demo_environment, spawn_overlay,
-    spawn_vat_actor, spin_demo_lights, write_overlay,
-};
 use saddle_animation_vertex_animation_texture::{
     VatClipFinished, VatCrossfade, VatEventReached, VatMaterial, VatMaterialDefaults, VatPlayback,
     VatPlaybackTweaks,
+};
+use support::{
+    demo_app, load_demo_assets, spawn_demo_camera, spawn_demo_environment, spawn_overlay,
+    spawn_vat_actor, spin_demo_lights, write_overlay,
 };
 
 #[derive(Component)]
@@ -212,15 +212,25 @@ fn handle_manual_input(keys: Res<ButtonInput<KeyCode>>, mut control: ResMut<LabC
 fn apply_control(
     mut commands: Commands,
     control: Res<LabControl>,
-    mut hero: Single<(Entity, &mut VatPlayback, &mut VatPlaybackTweaks, Option<&VatCrossfade>), With<Hero>>,
+    mut hero: Single<
+        (
+            Entity,
+            &mut VatPlayback,
+            &mut VatPlaybackTweaks,
+            Option<&VatCrossfade>,
+        ),
+        With<Hero>,
+    >,
 ) {
     hero.1.playing = !control.paused;
     hero.2.disable_interpolation = !control.interpolation_enabled;
 
     if hero.1.active_clip != control.requested_clip && hero.3.is_none() {
-        commands
-            .entity(hero.0)
-            .insert(VatCrossfade::new(hero.1.active_clip, control.requested_clip, 0.5));
+        commands.entity(hero.0).insert(VatCrossfade::new(
+            hero.1.active_clip,
+            control.requested_clip,
+            0.5,
+        ));
     }
 }
 

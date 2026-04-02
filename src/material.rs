@@ -1,8 +1,6 @@
 use bevy::{
     asset::{RenderAssetUsages, load_internal_asset, uuid_handle},
-    pbr::{
-        ExtendedMaterial, MaterialExtension, MaterialExtensionPipeline, StandardMaterial,
-    },
+    pbr::{ExtendedMaterial, MaterialExtension, MaterialExtensionPipeline, StandardMaterial},
     prelude::*,
     reflect::TypePath,
     render::{
@@ -16,8 +14,8 @@ use bevy::{
 use thiserror::Error;
 
 use crate::{
-    VatAnimationData, VatCoordinateSystem, VatNormalTexture, VatPlaybackSpace,
-    VatPositionEncoding, configure_vat_data_image,
+    VatAnimationData, VatCoordinateSystem, VatNormalTexture, VatPlaybackSpace, VatPositionEncoding,
+    configure_vat_data_image,
 };
 
 pub type VatMaterial = ExtendedMaterial<StandardMaterial, VatMaterialExt>;
@@ -110,7 +108,9 @@ impl FromWorld for VatMaterialDefaults {
             RenderAssetUsages::MAIN_WORLD | RenderAssetUsages::RENDER_WORLD,
         )));
 
-        Self { flat_normal_texture }
+        Self {
+            flat_normal_texture,
+        }
     }
 }
 
@@ -131,22 +131,16 @@ impl VatMaterialExt {
         buffers: &mut Assets<ShaderStorageBuffer>,
     ) -> Result<Self, VatMaterialBuildError> {
         let (normal_texture_handle, normal_layout) = match &animation.normal_texture {
-            VatNormalTexture::None => (
-                defaults.flat_normal_texture.clone(),
-                UVec4::new(1, 1, 0, 0),
-            ),
+            VatNormalTexture::None => {
+                (defaults.flat_normal_texture.clone(), UVec4::new(1, 1, 0, 0))
+            }
             VatNormalTexture::PackedInPositionTexture { row_offset, .. } => (
                 defaults.flat_normal_texture.clone(),
                 UVec4::new(1, 1, 0, *row_offset),
             ),
             VatNormalTexture::Separate { texture, .. } => (
                 normal_texture.ok_or(VatMaterialBuildError::MissingSeparateNormalTexture)?,
-                UVec4::new(
-                    texture.width,
-                    texture.height,
-                    texture.rows_per_frame,
-                    0,
-                ),
+                UVec4::new(texture.width, texture.height, texture.rows_per_frame, 0),
             ),
         };
 

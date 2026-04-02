@@ -60,9 +60,7 @@ pub fn parse_vat_animation_data_bytes(
     parse_vat_animation_data_value(value)
 }
 
-pub fn parse_vat_animation_data_str(
-    text: &str,
-) -> Result<VatAnimationData, VatMetadataLoadError> {
+pub fn parse_vat_animation_data_str(text: &str) -> Result<VatAnimationData, VatMetadataLoadError> {
     parse_vat_animation_data_bytes(text.as_bytes())
 }
 
@@ -381,17 +379,21 @@ impl RawNormalTexture {
         let encoding = parse_normal_encoding(self.encoding.as_deref())?;
         match self.mode.as_str() {
             "none" => Ok(VatNormalTexture::None),
-            "packed_in_position_texture" | "packed" => Ok(VatNormalTexture::PackedInPositionTexture {
-                row_offset: self.row_offset.unwrap_or(0),
-                encoding,
-            }),
+            "packed_in_position_texture" | "packed" => {
+                Ok(VatNormalTexture::PackedInPositionTexture {
+                    row_offset: self.row_offset.unwrap_or(0),
+                    encoding,
+                })
+            }
             "separate" | "separate_texture" => Ok(VatNormalTexture::Separate {
-                texture: self.texture.ok_or_else(|| {
-                    VatMetadataLoadError::UnsupportedFormat(
-                        "normal_texture.mode='separate' requires a texture descriptor".into(),
-                    )
-                })?
-                .into_texture()?,
+                texture: self
+                    .texture
+                    .ok_or_else(|| {
+                        VatMetadataLoadError::UnsupportedFormat(
+                            "normal_texture.mode='separate' requires a texture descriptor".into(),
+                        )
+                    })?
+                    .into_texture()?,
                 encoding,
             }),
             other => Err(VatMetadataLoadError::UnsupportedFormat(format!(

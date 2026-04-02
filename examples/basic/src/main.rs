@@ -1,11 +1,11 @@
 use saddle_animation_vertex_animation_texture_example_support as support;
 
 use bevy::prelude::*;
+use saddle_animation_vertex_animation_texture::{VatMaterial, VatMaterialDefaults, VatPlayback};
 use support::{
     demo_app, load_demo_assets, spawn_demo_camera, spawn_demo_environment, spawn_vat_actor,
     spin_demo_lights,
 };
-use saddle_animation_vertex_animation_texture::{VatMaterial, VatMaterialDefaults, VatPlayback};
 
 fn main() {
     let mut app = demo_app("vertex_animation_texture basic");

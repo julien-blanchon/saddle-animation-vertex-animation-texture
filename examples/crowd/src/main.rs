@@ -1,11 +1,11 @@
 use saddle_animation_vertex_animation_texture_example_support as support;
 
 use bevy::prelude::*;
+use saddle_animation_vertex_animation_texture::{VatMaterial, VatMaterialDefaults, VatPlayback};
 use support::{
     demo_app, load_demo_assets, spawn_demo_camera, spawn_demo_environment, spawn_vat_actor,
     spin_demo_lights,
 };
-use saddle_animation_vertex_animation_texture::{VatMaterial, VatMaterialDefaults, VatPlayback};
 
 fn main() {
     let mut app = demo_app("vertex_animation_texture crowd");
@@ -42,9 +42,7 @@ fn setup(
             let seed = row * 9 + column;
             let x = column as f32 * 0.75 - 3.0;
             let z = row as f32 * 0.55 - 1.2;
-            let phase = (seed as f32 * 0.173).fract()
-                * support::DEMO_FRAMES_PER_CLIP as f32
-                / 24.0;
+            let phase = (seed as f32 * 0.173).fract() * support::DEMO_FRAMES_PER_CLIP as f32 / 24.0;
             let clip_index = if seed % 5 == 0 { 1 } else { 0 };
             spawn_vat_actor(
                 &mut commands,

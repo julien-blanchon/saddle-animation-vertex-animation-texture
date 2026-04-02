@@ -1,10 +1,7 @@
 use std::collections::{HashMap, hash_map::Entry};
 
 use bevy::{
-    asset::AssetEvent,
-    camera::visibility::NoFrustumCulling,
-    mesh::MeshTag,
-    prelude::*,
+    asset::AssetEvent, camera::visibility::NoFrustumCulling, mesh::MeshTag, prelude::*,
     render::storage::ShaderStorageBuffer,
 };
 
@@ -103,7 +100,9 @@ pub(crate) fn ensure_runtime_components(
     query: Query<Entity, (With<VatPlayback>, Without<VatPlaybackRuntime>)>,
 ) {
     for entity in &query {
-        commands.entity(entity).insert(VatPlaybackRuntime::default());
+        commands
+            .entity(entity)
+            .insert(VatPlaybackRuntime::default());
     }
 }
 
@@ -202,7 +201,9 @@ pub(crate) fn advance_playback(
                 crossfade_runtime.source_clip = playback.active_clip;
                 crossfade_runtime.source_time_seconds = playback.time_seconds;
                 crossfade_runtime.source_direction = runtime.direction;
-                playback.active_clip = crossfade.to_clip.min(animation.clips.len().saturating_sub(1));
+                playback.active_clip = crossfade
+                    .to_clip
+                    .min(animation.clips.len().saturating_sub(1));
                 playback.time_seconds = 0.0;
                 runtime.direction = 1.0;
                 runtime.last_clip_index = playback.active_clip;
@@ -277,27 +278,19 @@ pub(crate) fn validate_bindings_and_apply_bounds(
     meshes: Res<Assets<Mesh>>,
     mut animation_events: MessageReader<AssetEvent<VatAnimationData>>,
     mut mesh_events: MessageReader<AssetEvent<Mesh>>,
-    query: Query<
-        (
-            Entity,
-            Ref<VatAnimationSource>,
-            Ref<Mesh3d>,
-            Has<NoFrustumCulling>,
-            Has<VatBindingReady>,
-            Option<&VatBindingFailure>,
-        ),
-    >,
+    query: Query<(
+        Entity,
+        Ref<VatAnimationSource>,
+        Ref<Mesh3d>,
+        Has<NoFrustumCulling>,
+        Has<VatBindingReady>,
+        Option<&VatBindingFailure>,
+    )>,
 ) {
     let assets_changed = animation_events.read().count() > 0 || mesh_events.read().count() > 0;
 
-    for (
-        entity,
-        source,
-        mesh_handle,
-        has_no_frustum_culling,
-        has_binding_ready,
-        binding_failure,
-    ) in &query
+    for (entity, source, mesh_handle, has_no_frustum_culling, has_binding_ready, binding_failure) in
+        &query
     {
         let source_changed = source.is_added() || source.is_changed();
         let mesh_changed = mesh_handle.is_added() || mesh_handle.is_changed();
@@ -328,7 +321,10 @@ pub(crate) fn validate_bindings_and_apply_bounds(
             }
             Err(error) => {
                 let reason = error.to_string();
-                error!("VAT binding validation failed for entity {:?}: {}", entity, reason);
+                error!(
+                    "VAT binding validation failed for entity {:?}: {}",
+                    entity, reason
+                );
                 if has_binding_ready {
                     commands.entity(entity).remove::<VatBindingReady>();
                 }
@@ -420,12 +416,8 @@ pub(crate) fn sync_gpu_state(
                     disable_interpolation,
                     matches!(resolve_loop_mode(playback, source_clip), VatLoopMode::Loop),
                 );
-                instance.secondary_frames = Vec4::new(
-                    secondary.frame_a,
-                    secondary.frame_b,
-                    secondary.blend,
-                    0.0,
-                );
+                instance.secondary_frames =
+                    Vec4::new(secondary.frame_a, secondary.frame_b, secondary.blend, 0.0);
                 instance.options.z = 1.0;
             }
         }
@@ -517,7 +509,9 @@ fn sample_frame_state(
         raw_position.min((clip_frame_count - 1) as f32)
     };
 
-    let relative_frame_a = frame_position.floor().clamp(0.0, (clip_frame_count - 1) as f32);
+    let relative_frame_a = frame_position
+        .floor()
+        .clamp(0.0, (clip_frame_count - 1) as f32);
     let frame_a = clip.start_frame as f32 + relative_frame_a;
     let frame_b = if disable_interpolation {
         frame_a

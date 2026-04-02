@@ -57,10 +57,7 @@ impl VatAnimationData {
 
     #[must_use]
     pub fn supports_v1_runtime(&self) -> bool {
-        matches!(
-            self.animation_mode,
-            VatAnimationMode::SoftBodyFixedTopology
-        )
+        matches!(self.animation_mode, VatAnimationMode::SoftBodyFixedTopology)
     }
 }
 

@@ -11,7 +11,8 @@ use crate::{
     VatCoordinateSystem, VatMaterial, VatMaterialDefaults, VatNormalTexture, VatPlayback,
     VatPlaybackSpace, VatPositionEncoding, VatSourceFormat, VatTextureDescriptor,
     VatTexturePrecision, VatVertexIdAttribute, VertexAnimationTexturePlugin, build_vat_material,
-    make_linear_rgba8_image, systems::{VatBindingFailure, VatBindingReady},
+    make_linear_rgba8_image,
+    systems::{VatBindingFailure, VatBindingReady},
 };
 
 #[derive(ScheduleLabel, Debug, Clone, PartialEq, Eq, Hash)]
@@ -157,9 +158,17 @@ fn injectable_schedules_are_honored() {
     let runtime = app.world().resource::<crate::systems::VatRuntimeState>();
     assert!(!runtime.active);
     app.world_mut().run_schedule(TestActivate);
-    assert!(app.world().resource::<crate::systems::VatRuntimeState>().active);
+    assert!(
+        app.world()
+            .resource::<crate::systems::VatRuntimeState>()
+            .active
+    );
     app.world_mut().run_schedule(TestDeactivate);
-    assert!(!app.world().resource::<crate::systems::VatRuntimeState>().active);
+    assert!(
+        !app.world()
+            .resource::<crate::systems::VatRuntimeState>()
+            .active
+    );
 }
 
 #[test]
@@ -173,14 +182,28 @@ fn multiple_entities_can_animate_independently() {
 
     let animation = make_animation(4);
     let (position_texture, normal_texture) = make_textures(4);
-    let animation_handle = app.world_mut().resource_mut::<Assets<VatAnimationData>>().add(animation.clone());
-    let position_texture_handle = app.world_mut().resource_mut::<Assets<Image>>().add(position_texture);
-    let normal_texture_handle = app.world_mut().resource_mut::<Assets<Image>>().add(normal_texture);
-    let mesh_handle = app.world_mut().resource_mut::<Assets<Mesh>>().add(make_mesh(true));
+    let animation_handle = app
+        .world_mut()
+        .resource_mut::<Assets<VatAnimationData>>()
+        .add(animation.clone());
+    let position_texture_handle = app
+        .world_mut()
+        .resource_mut::<Assets<Image>>()
+        .add(position_texture);
+    let normal_texture_handle = app
+        .world_mut()
+        .resource_mut::<Assets<Image>>()
+        .add(normal_texture);
+    let mesh_handle = app
+        .world_mut()
+        .resource_mut::<Assets<Mesh>>()
+        .add(make_mesh(true));
 
     let defaults = app.world().resource::<VatMaterialDefaults>().clone();
     let material = {
-        let mut buffers = app.world_mut().resource_mut::<Assets<ShaderStorageBuffer>>();
+        let mut buffers = app
+            .world_mut()
+            .resource_mut::<Assets<ShaderStorageBuffer>>();
         build_vat_material(
             StandardMaterial::default(),
             &animation,
@@ -191,7 +214,10 @@ fn multiple_entities_can_animate_independently() {
         )
         .unwrap()
     };
-    let material_handle = app.world_mut().resource_mut::<Assets<VatMaterial>>().add(material);
+    let material_handle = app
+        .world_mut()
+        .resource_mut::<Assets<VatMaterial>>()
+        .add(material);
 
     app.world_mut().spawn((
         Mesh3d(mesh_handle.clone()),
@@ -217,8 +243,16 @@ fn multiple_entities_can_animate_independently() {
     assert_eq!(tags.len(), 2);
     assert_eq!(tags, vec![0, 1]);
 
-    let material = app.world().resource::<Assets<VatMaterial>>().get(&material_handle).unwrap();
-    let buffer = app.world().resource::<Assets<ShaderStorageBuffer>>().get(&material.extension.instances).unwrap();
+    let material = app
+        .world()
+        .resource::<Assets<VatMaterial>>()
+        .get(&material_handle)
+        .unwrap();
+    let buffer = app
+        .world()
+        .resource::<Assets<ShaderStorageBuffer>>()
+        .get(&material.extension.instances)
+        .unwrap();
     assert!(buffer.data.as_ref().is_some_and(|bytes| !bytes.is_empty()));
 }
 
@@ -233,14 +267,28 @@ fn invalid_asset_combinations_fail_clearly() {
 
     let animation = make_animation(4);
     let (position_texture, normal_texture) = make_textures(4);
-    let animation_handle = app.world_mut().resource_mut::<Assets<VatAnimationData>>().add(animation.clone());
-    let position_texture_handle = app.world_mut().resource_mut::<Assets<Image>>().add(position_texture);
-    let normal_texture_handle = app.world_mut().resource_mut::<Assets<Image>>().add(normal_texture);
-    let mesh_handle = app.world_mut().resource_mut::<Assets<Mesh>>().add(make_mesh(false));
+    let animation_handle = app
+        .world_mut()
+        .resource_mut::<Assets<VatAnimationData>>()
+        .add(animation.clone());
+    let position_texture_handle = app
+        .world_mut()
+        .resource_mut::<Assets<Image>>()
+        .add(position_texture);
+    let normal_texture_handle = app
+        .world_mut()
+        .resource_mut::<Assets<Image>>()
+        .add(normal_texture);
+    let mesh_handle = app
+        .world_mut()
+        .resource_mut::<Assets<Mesh>>()
+        .add(make_mesh(false));
 
     let defaults = app.world().resource::<VatMaterialDefaults>().clone();
     let material = {
-        let mut buffers = app.world_mut().resource_mut::<Assets<ShaderStorageBuffer>>();
+        let mut buffers = app
+            .world_mut()
+            .resource_mut::<Assets<ShaderStorageBuffer>>();
         build_vat_material(
             StandardMaterial::default(),
             &animation,
@@ -251,14 +299,21 @@ fn invalid_asset_combinations_fail_clearly() {
         )
         .unwrap()
     };
-    let material_handle = app.world_mut().resource_mut::<Assets<VatMaterial>>().add(material);
+    let material_handle = app
+        .world_mut()
+        .resource_mut::<Assets<VatMaterial>>()
+        .add(material);
 
-    let entity = app.world_mut().spawn((
-        Mesh3d(mesh_handle),
-        MeshMaterial3d(material_handle),
-        VatAnimationSource::new(animation_handle).with_bounds_mode(VatBoundsMode::UseMetadataAabb),
-        VatPlayback::default(),
-    )).id();
+    let entity = app
+        .world_mut()
+        .spawn((
+            Mesh3d(mesh_handle),
+            MeshMaterial3d(material_handle),
+            VatAnimationSource::new(animation_handle)
+                .with_bounds_mode(VatBoundsMode::UseMetadataAabb),
+            VatPlayback::default(),
+        ))
+        .id();
 
     app.world_mut().run_schedule(TestActivate);
     app.world_mut().run_schedule(TestUpdate);
@@ -277,14 +332,28 @@ fn cleanup_path_does_not_panic() {
 
     let animation = make_animation(4);
     let (position_texture, normal_texture) = make_textures(4);
-    let animation_handle = app.world_mut().resource_mut::<Assets<VatAnimationData>>().add(animation.clone());
-    let position_texture_handle = app.world_mut().resource_mut::<Assets<Image>>().add(position_texture);
-    let normal_texture_handle = app.world_mut().resource_mut::<Assets<Image>>().add(normal_texture);
-    let mesh_handle = app.world_mut().resource_mut::<Assets<Mesh>>().add(make_mesh(true));
+    let animation_handle = app
+        .world_mut()
+        .resource_mut::<Assets<VatAnimationData>>()
+        .add(animation.clone());
+    let position_texture_handle = app
+        .world_mut()
+        .resource_mut::<Assets<Image>>()
+        .add(position_texture);
+    let normal_texture_handle = app
+        .world_mut()
+        .resource_mut::<Assets<Image>>()
+        .add(normal_texture);
+    let mesh_handle = app
+        .world_mut()
+        .resource_mut::<Assets<Mesh>>()
+        .add(make_mesh(true));
 
     let defaults = app.world().resource::<VatMaterialDefaults>().clone();
     let material = {
-        let mut buffers = app.world_mut().resource_mut::<Assets<ShaderStorageBuffer>>();
+        let mut buffers = app
+            .world_mut()
+            .resource_mut::<Assets<ShaderStorageBuffer>>();
         build_vat_material(
             StandardMaterial::default(),
             &animation,
@@ -295,14 +364,20 @@ fn cleanup_path_does_not_panic() {
         )
         .unwrap()
     };
-    let material_handle = app.world_mut().resource_mut::<Assets<VatMaterial>>().add(material);
+    let material_handle = app
+        .world_mut()
+        .resource_mut::<Assets<VatMaterial>>()
+        .add(material);
 
-    let entity = app.world_mut().spawn((
-        Mesh3d(mesh_handle),
-        MeshMaterial3d(material_handle),
-        VatAnimationSource::new(animation_handle),
-        VatPlayback::default(),
-    )).id();
+    let entity = app
+        .world_mut()
+        .spawn((
+            Mesh3d(mesh_handle),
+            MeshMaterial3d(material_handle),
+            VatAnimationSource::new(animation_handle),
+            VatPlayback::default(),
+        ))
+        .id();
 
     app.world_mut().run_schedule(TestActivate);
     app.world_mut().run_schedule(TestUpdate);
@@ -342,7 +417,9 @@ fn bindings_become_ready_after_assets_arrive_late() {
 
     let defaults = app.world().resource::<VatMaterialDefaults>().clone();
     let material = {
-        let mut buffers = app.world_mut().resource_mut::<Assets<ShaderStorageBuffer>>();
+        let mut buffers = app
+            .world_mut()
+            .resource_mut::<Assets<ShaderStorageBuffer>>();
         build_vat_material(
             StandardMaterial::default(),
             &animation,
@@ -353,7 +430,10 @@ fn bindings_become_ready_after_assets_arrive_late() {
         )
         .unwrap()
     };
-    let material_handle = app.world_mut().resource_mut::<Assets<VatMaterial>>().add(material);
+    let material_handle = app
+        .world_mut()
+        .resource_mut::<Assets<VatMaterial>>()
+        .add(material);
 
     let entity = app
         .world_mut()
@@ -423,5 +503,9 @@ fn completed_crossfade_is_cleaned_up() {
     app.world_mut().run_schedule(TestUpdate);
 
     assert!(!app.world().entity(entity).contains::<crate::VatCrossfade>());
-    assert!(!app.world().entity(entity).contains::<crate::systems::VatCrossfadeRuntime>());
+    assert!(
+        !app.world()
+            .entity(entity)
+            .contains::<crate::systems::VatCrossfadeRuntime>()
+    );
 }

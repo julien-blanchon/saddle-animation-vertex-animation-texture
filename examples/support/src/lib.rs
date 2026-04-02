@@ -134,8 +134,9 @@ pub fn load_demo_assets(
     defaults: &VatMaterialDefaults,
     color: Color,
 ) -> VatDemoAssets {
-    let animation = parse_vat_animation_data_str(include_str!("../../assets/demo/wave.vatanim.json"))
-        .expect("demo metadata should be valid");
+    let animation =
+        parse_vat_animation_data_str(include_str!("../../assets/demo/wave.vatanim.json"))
+            .expect("demo metadata should be valid");
     let position_texture = images.add(build_position_texture(&animation));
     let normal_texture = images.add(build_normal_texture(&animation));
     let material = materials.add(
@@ -304,7 +305,10 @@ fn build_position_texture(animation: &VatAnimationData) -> Image {
         }
     }
 
-    make_linear_rgba8_image(UVec2::new(frame_positions[0].len() as u32, DEMO_FRAME_COUNT as u32), data)
+    make_linear_rgba8_image(
+        UVec2::new(frame_positions[0].len() as u32, DEMO_FRAME_COUNT as u32),
+        data,
+    )
 }
 
 fn build_normal_texture(animation: &VatAnimationData) -> Image {
@@ -325,7 +329,10 @@ fn build_normal_texture(animation: &VatAnimationData) -> Image {
         }
     }
 
-    make_linear_rgba8_image(UVec2::new(frame_normals[0].len() as u32, DEMO_FRAME_COUNT as u32), data)
+    make_linear_rgba8_image(
+        UVec2::new(frame_normals[0].len() as u32, DEMO_FRAME_COUNT as u32),
+        data,
+    )
 }
 
 fn generate_frame_positions() -> Vec<Vec<Vec3>> {

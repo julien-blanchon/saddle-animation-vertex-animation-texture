@@ -17,8 +17,9 @@ fn canonical_metadata_normalizes_successfully() {
 
 #[test]
 fn openvat_subset_normalizes_successfully() {
-    let animation = parse_vat_animation_data_str(include_str!("../assets/demo/openvat_like.vat.json"))
-        .expect("openvat-like demo metadata should parse");
+    let animation =
+        parse_vat_animation_data_str(include_str!("../assets/demo/openvat_like.vat.json"))
+            .expect("openvat-like demo metadata should parse");
 
     assert_eq!(animation.source_format, crate::VatSourceFormat::OpenVat);
     assert_eq!(animation.vertex_count, 81);
@@ -89,9 +90,7 @@ fn missing_separate_normal_descriptor_fails_loudly() {
     .expect_err("missing separate texture descriptor should fail");
 
     assert!(
-        error
-            .to_string()
-            .contains("requires a texture descriptor"),
+        error.to_string().contains("requires a texture descriptor"),
         "expected actionable missing normal texture error, got: {error}"
     );
 }

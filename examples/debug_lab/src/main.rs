@@ -1,13 +1,13 @@
 use saddle_animation_vertex_animation_texture_example_support as support;
 
 use bevy::prelude::*;
-use support::{
-    demo_app, load_demo_assets, spawn_demo_camera, spawn_demo_environment, spawn_overlay,
-    spawn_vat_actor, spin_demo_lights, write_overlay,
-};
 use saddle_animation_vertex_animation_texture::{
     VatClipFinished, VatCrossfade, VatEventReached, VatMaterial, VatMaterialDefaults, VatPlayback,
     VatPlaybackTweaks,
+};
+use support::{
+    demo_app, load_demo_assets, spawn_demo_camera, spawn_demo_environment, spawn_overlay,
+    spawn_vat_actor, spin_demo_lights, write_overlay,
 };
 
 #[derive(Component)]
@@ -72,7 +72,9 @@ fn setup(
         Vec3::new(-0.8, 0.0, 0.0),
         Vec3::splat(2.4),
     );
-    commands.entity(hero).insert((Hero, VatPlaybackTweaks::default()));
+    commands
+        .entity(hero)
+        .insert((Hero, VatPlaybackTweaks::default()));
 
     spawn_vat_actor(
         &mut commands,
@@ -118,9 +120,11 @@ fn handle_debug_input(
 
     if let Some(clip_index) = requested_clip {
         if playback.active_clip != clip_index {
-            commands
-                .entity(entity)
-                .insert(VatCrossfade::new(playback.active_clip, clip_index, 0.45));
+            commands.entity(entity).insert(VatCrossfade::new(
+                playback.active_clip,
+                clip_index,
+                0.45,
+            ));
         }
         state.active_clip = clip_index;
     }
