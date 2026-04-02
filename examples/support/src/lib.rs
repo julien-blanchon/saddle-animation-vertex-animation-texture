@@ -135,7 +135,7 @@ pub fn load_demo_assets(
     color: Color,
 ) -> VatDemoAssets {
     let animation =
-        parse_vat_animation_data_str(include_str!("../../assets/demo/wave.vatanim.json"))
+        parse_vat_animation_data_str(include_str!("../../../assets/demo/wave.vatanim.json"))
             .expect("demo metadata should be valid");
     let position_texture = images.add(build_position_texture(&animation));
     let normal_texture = images.add(build_normal_texture(&animation));

@@ -19,7 +19,9 @@ impl Plugin for VatLabE2EPlugin {
         if let Some(name) = scenario_name {
             if let Some(mut scenario) = scenario_by_name(&name) {
                 if handoff {
-                    scenario.actions.push(saddle_bevy_e2e::action::Action::Handoff);
+                    scenario
+                        .actions
+                        .push(saddle_bevy_e2e::action::Action::Handoff);
                 }
                 init_scenario(app, scenario);
             } else {
