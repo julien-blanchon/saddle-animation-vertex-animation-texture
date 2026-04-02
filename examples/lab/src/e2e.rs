@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_e2e::{E2EPlugin, E2ESet, init_scenario};
+use saddle_bevy_e2e::{E2EPlugin, E2ESet, init_scenario};
 
 use crate::scenarios::{list_scenarios, scenario_by_name};
 
@@ -19,7 +19,7 @@ impl Plugin for VatLabE2EPlugin {
         if let Some(name) = scenario_name {
             if let Some(mut scenario) = scenario_by_name(&name) {
                 if handoff {
-                    scenario.actions.push(bevy_e2e::action::Action::Handoff);
+                    scenario.actions.push(saddle_bevy_e2e::action::Action::Handoff);
                 }
                 init_scenario(app, scenario);
             } else {
