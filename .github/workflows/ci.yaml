@@ -77,6 +77,15 @@ jobs:
       - run: cargo check --target wasm32-unknown-unknown
         env:
           RUSTFLAGS: --cfg getrandom_backend="wasm_js"
+      - name: Install Linux deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y libasound2-dev libudev-dev libwayland-dev
+      - name: Check examples workspace for WASM
+        if: hashFiles('examples/Cargo.toml') != ''
+        run: cargo check --target wasm32-unknown-unknown --manifest-path examples/Cargo.toml
+        env:
+          RUSTFLAGS: --cfg getrandom_backend="wasm_js"
 
   clippy:
     name: Clippy
@@ -122,7 +131,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libwayland-dev libudev-dev libasound2-dev
-      - run: cargo test
+      # Skip integration_tests module — those tests initialize DefaultPlugins
+      # which requires a GPU (unavailable in CI). Unit tests still run.
+      - run: cargo test -- --skip integration_tests
 
   doc:
     name: Doc
