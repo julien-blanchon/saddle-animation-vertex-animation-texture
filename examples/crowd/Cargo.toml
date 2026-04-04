@@ -8,6 +8,9 @@ publish = false
 bevy = { workspace = true }
 saddle-animation-vertex-animation-texture = { workspace = true }
 saddle-animation-vertex-animation-texture-example-support = { path = "../support" }
+bevy_flair = { workspace = true }
+bevy_input_focus = { workspace = true }
+bevy_ui_widgets = { workspace = true }
 saddle-pane = { workspace = true }
 
 [lints]

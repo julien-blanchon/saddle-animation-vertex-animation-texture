@@ -313,7 +313,7 @@ pub fn spin_demo_lights(time: Res<Time>, mut query: Query<(&DemoSpinner, &mut Tr
     }
 }
 
-fn sync_vat_pane(
+pub fn sync_vat_pane(
     pane: Res<VatExamplePane>,
     mut commands: Commands,
     mut query: Query<(
@@ -350,7 +350,7 @@ fn sync_vat_pane(
     }
 }
 
-fn reflect_vat_pane(
+pub fn reflect_vat_pane(
     mut pane: ResMut<VatExamplePane>,
     query: Query<(&VatPlayback, Option<&VatCrossfade>, Option<&VatPlaybackFollower>), With<VatPaneControlled>>,
 ) {
@@ -375,7 +375,7 @@ fn reflect_vat_pane(
     pane.leader_time_seconds = leader_time_seconds;
 }
 
-fn build_demo_mesh() -> Mesh {
+pub fn build_demo_mesh() -> Mesh {
     let vertex_count_x = DEMO_COLUMNS + 1;
     let vertex_count_y = DEMO_ROWS + 1;
     let total_vertices = vertex_count_x * vertex_count_y;
@@ -433,7 +433,7 @@ fn build_demo_mesh() -> Mesh {
     mesh
 }
 
-fn build_position_texture(animation: &VatAnimationData) -> Image {
+pub fn build_position_texture(animation: &VatAnimationData) -> Image {
     let frame_positions = generate_frame_positions();
     let bounds_min = animation.decode_bounds_min;
     let bounds_extent = animation.decode_bounds_max - animation.decode_bounds_min;
@@ -457,7 +457,7 @@ fn build_position_texture(animation: &VatAnimationData) -> Image {
     )
 }
 
-fn build_normal_texture(animation: &VatAnimationData) -> Image {
+pub fn build_normal_texture(animation: &VatAnimationData) -> Image {
     let frame_positions = generate_frame_positions();
     let frame_normals = generate_frame_normals(&frame_positions);
     let _ = animation;
