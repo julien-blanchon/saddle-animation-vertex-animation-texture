@@ -1,3 +1,4 @@
+use saddle_pane::binding::RegisterPaneExt;
 use saddle_animation_vertex_animation_texture_example_support as support;
 
 use bevy::{color::LinearRgba, prelude::*};
