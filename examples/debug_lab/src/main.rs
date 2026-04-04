@@ -6,8 +6,8 @@ use saddle_animation_vertex_animation_texture::{
     VatPlaybackTweaks,
 };
 use support::{
-    demo_app, load_demo_assets, spawn_demo_camera, spawn_demo_environment, spawn_overlay,
-    spawn_vat_actor, spin_demo_lights, write_overlay,
+    VatPaneControlled, demo_app, load_demo_assets, spawn_demo_camera, spawn_demo_environment,
+    spawn_overlay, spawn_vat_actor, spin_demo_lights, write_overlay,
 };
 
 #[derive(Component)]
@@ -74,7 +74,11 @@ fn setup(
     );
     commands
         .entity(hero)
-        .insert((Hero, VatPlaybackTweaks::default()));
+        .insert((
+            Hero,
+            VatPlaybackTweaks::default(),
+            VatPaneControlled::new(1.0, Vec3::splat(2.4)).with_clip_sync(),
+        ));
 
     spawn_vat_actor(
         &mut commands,

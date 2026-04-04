@@ -75,6 +75,27 @@ Usage:
   - `false` by default
   - When `true`, the runtime snaps to frame A instead of blending to frame B
 
+### `VatPlaybackFollower`
+
+- `leader`
+  - `Entity`
+  - Required playback source entity to mirror
+- `time_offset_seconds`
+  - `0.0` by default
+  - Applies a signed clip-local offset after copying the leader state
+- `mirror_loop_mode`
+  - `true` by default
+  - When `true`, the follower copies the leader loop mode before time normalization
+- `mirror_crossfade`
+  - `true` by default
+  - When `true`, `VatCrossfade` and its runtime source state are mirrored as well
+
+Usage:
+
+- Add `VatPlaybackFollower` to secondary meshes that should stay phase-locked to a leader mesh.
+- Followers do not advance their own time independently while the component is present.
+- Offsets are normalized through the resolved loop mode, so looping and ping-pong clips stay stable.
+
 ## Enums
 
 ### `VatLoopMode`

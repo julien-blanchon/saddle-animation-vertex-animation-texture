@@ -25,7 +25,7 @@ pub use asset_loader::{
 };
 pub use components::{
     VatAnimationBundle, VatAnimationSource, VatBoundsMode, VatCrossfade, VatLoopMode, VatPlayback,
-    VatPlaybackTweaks,
+    VatPlaybackFollower, VatPlaybackTweaks,
 };
 pub use material::{
     VatMaterial, VatMaterialBuildError, VatMaterialDefaults, VatMaterialExt, VatMaterialUniform,
@@ -42,6 +42,7 @@ pub use validation::{
 #[derive(SystemSet, Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub enum VatSystems {
     AdvancePlayback,
+    SyncFollowers,
     ResolveTransitions,
     EmitMessages,
     SyncGpuState,
@@ -111,6 +112,7 @@ impl Plugin for VertexAnimationTexturePlugin {
             .register_type::<VatNormalEncoding>()
             .register_type::<VatNormalTexture>()
             .register_type::<VatPlayback>()
+            .register_type::<VatPlaybackFollower>()
             .register_type::<VatPlaybackSpace>()
             .register_type::<VatPlaybackTweaks>()
             .register_type::<VatPositionEncoding>()
@@ -124,6 +126,7 @@ impl Plugin for VertexAnimationTexturePlugin {
                 self.update_schedule,
                 (
                     VatSystems::AdvancePlayback,
+                    VatSystems::SyncFollowers,
                     VatSystems::ResolveTransitions,
                     VatSystems::EmitMessages,
                     VatSystems::SyncGpuState,
@@ -138,6 +141,12 @@ impl Plugin for VertexAnimationTexturePlugin {
                 )
                     .chain()
                     .in_set(VatSystems::AdvancePlayback)
+                    .run_if(systems::runtime_is_active),
+            )
+            .add_systems(
+                self.update_schedule,
+                systems::sync_playback_followers
+                    .in_set(VatSystems::SyncFollowers)
                     .run_if(systems::runtime_is_active),
             )
             .add_systems(

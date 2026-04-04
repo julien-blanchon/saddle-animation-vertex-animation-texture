@@ -126,6 +126,45 @@ pub struct VatPlaybackTweaks {
     pub disable_interpolation: bool,
 }
 
+#[derive(Component, Reflect, Clone, Debug, PartialEq)]
+#[reflect(Component)]
+pub struct VatPlaybackFollower {
+    pub leader: Entity,
+    pub time_offset_seconds: f32,
+    pub mirror_loop_mode: bool,
+    pub mirror_crossfade: bool,
+}
+
+impl VatPlaybackFollower {
+    #[must_use]
+    pub fn new(leader: Entity) -> Self {
+        Self {
+            leader,
+            time_offset_seconds: 0.0,
+            mirror_loop_mode: true,
+            mirror_crossfade: true,
+        }
+    }
+
+    #[must_use]
+    pub fn with_time_offset_seconds(mut self, time_offset_seconds: f32) -> Self {
+        self.time_offset_seconds = time_offset_seconds;
+        self
+    }
+
+    #[must_use]
+    pub fn without_loop_mode_sync(mut self) -> Self {
+        self.mirror_loop_mode = false;
+        self
+    }
+
+    #[must_use]
+    pub fn without_crossfade_sync(mut self) -> Self {
+        self.mirror_crossfade = false;
+        self
+    }
+}
+
 #[derive(Clone, Copy, Debug, Reflect, Default, PartialEq, Eq, Hash)]
 pub enum VatLoopMode {
     #[default]

@@ -4,6 +4,7 @@ members = [
     "basic",
     "crowd",
     "multi_clip",
+    "modular_sync",
     "debug_lab",
     "lab",
 ]
@@ -12,6 +13,10 @@ resolver = "3"
 [workspace.dependencies]
 bevy = "0.18"
 saddle-animation-vertex-animation-texture = { path = ".." }
+bevy_flair = "0.7"
+bevy_input_focus = "0.18"
+bevy_ui_widgets = "0.18"
+saddle-pane = { git = "https://github.com/julien-blanchon/saddle-pane" }
 
 [workspace.lints.clippy]
 too_many_arguments = "allow"

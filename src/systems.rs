@@ -7,7 +7,7 @@ use bevy::{
 
 use crate::{
     VatAnimationData, VatAnimationSource, VatBoundsMode, VatClipFinished, VatCrossfade,
-    VatEventReached, VatLoopMode, VatMaterial, VatPlayback, VatPlaybackTweaks,
+    VatEventReached, VatLoopMode, VatMaterial, VatPlayback, VatPlaybackFollower, VatPlaybackTweaks,
     material::VatGpuInstance,
     validation::{VatMeshValidationError, metadata_aabb, should_disable_frustum_culling},
 };
@@ -83,6 +83,14 @@ struct AdvanceResult {
     segments: Vec<TraversalSegment>,
 }
 
+#[derive(Clone, Debug)]
+struct LeaderSyncSnapshot {
+    playback: VatPlayback,
+    direction: f32,
+    crossfade: Option<VatCrossfade>,
+    crossfade_runtime: Option<VatCrossfadeRuntime>,
+}
+
 pub(crate) fn activate_runtime(mut runtime: ResMut<VatRuntimeState>) {
     runtime.active = true;
 }
@@ -114,6 +122,7 @@ pub(crate) fn advance_playback(
         Entity,
         &VatAnimationSource,
         &mut VatPlayback,
+        Option<&VatPlaybackFollower>,
         Option<&VatCrossfade>,
         &mut VatPlaybackRuntime,
         Option<&mut VatCrossfadeRuntime>,
@@ -121,13 +130,18 @@ pub(crate) fn advance_playback(
 ) {
     let delta_seconds = time.delta_secs();
 
-    for (entity, source, mut playback, crossfade, mut runtime, crossfade_runtime) in &mut query {
+    for (entity, source, mut playback, follower, crossfade, mut runtime, crossfade_runtime) in
+        &mut query
+    {
         runtime.pending_events.clear();
         runtime.pending_finishes.clear();
 
         let Some(animation) = animations.get(&source.animation) else {
             continue;
         };
+        if follower.is_some() {
+            continue;
+        }
         let Some(active_clip) = animation.clip(playback.active_clip) else {
             error!(
                 "VAT entity {:?} requested clip index {} but metadata only has {} clips",
@@ -226,6 +240,145 @@ pub(crate) fn advance_playback(
     }
 }
 
+pub(crate) fn sync_playback_followers(
+    mut commands: Commands,
+    animations: Res<Assets<VatAnimationData>>,
+    mut set: ParamSet<(
+        Query<(
+            Entity,
+            &VatPlayback,
+            &VatPlaybackRuntime,
+            Option<&VatCrossfade>,
+            Option<&VatCrossfadeRuntime>,
+        )>,
+        Query<(
+            Entity,
+            &VatAnimationSource,
+            &VatPlaybackFollower,
+            &mut VatPlayback,
+            &mut VatPlaybackRuntime,
+            Option<&mut VatCrossfade>,
+            Option<&mut VatCrossfadeRuntime>,
+        )>,
+    )>,
+) {
+    let leader_by_entity = set
+        .p0()
+        .iter()
+        .map(
+            |(entity, playback, runtime, crossfade, crossfade_runtime)| {
+                (
+                    entity,
+                    LeaderSyncSnapshot {
+                        playback: playback.clone(),
+                        direction: runtime.direction,
+                        crossfade: crossfade.cloned(),
+                        crossfade_runtime: crossfade_runtime.copied(),
+                    },
+                )
+            },
+        )
+        .collect::<HashMap<_, _>>();
+    let mut followers = set.p1();
+
+    for (
+        entity,
+        source,
+        follower,
+        mut playback,
+        mut runtime,
+        mut crossfade,
+        mut crossfade_runtime,
+    ) in &mut followers
+    {
+        let Some(leader) = leader_by_entity.get(&follower.leader) else {
+            continue;
+        };
+        let Some(animation) = animations.get(&source.animation) else {
+            continue;
+        };
+        let clip_count = animation.clips.len();
+        if clip_count == 0 {
+            continue;
+        }
+
+        playback.active_clip = leader.playback.active_clip.min(clip_count - 1);
+        playback.playing = leader.playback.playing;
+        if follower.mirror_loop_mode {
+            playback.loop_mode = leader.playback.loop_mode;
+        }
+
+        if let Some(active_clip) = animation.clip(playback.active_clip) {
+            let offset_seconds =
+                follower.time_offset_seconds * normalized_direction(leader.direction);
+            let loop_mode = resolve_loop_mode(&playback, active_clip);
+            playback.time_seconds = normalize_synced_time(
+                leader.playback.time_seconds + offset_seconds,
+                loop_mode,
+                clip_duration_seconds(animation, active_clip),
+            );
+        }
+        runtime.direction = leader.direction;
+        runtime.last_clip_index = playback.active_clip;
+        runtime.pending_events.clear();
+        runtime.pending_finishes.clear();
+
+        if !follower.mirror_crossfade {
+            continue;
+        }
+
+        match (&leader.crossfade, leader.crossfade_runtime) {
+            (Some(leader_crossfade), Some(leader_crossfade_runtime)) => {
+                let to_clip = leader_crossfade.to_clip.min(clip_count - 1);
+                let from_clip = leader_crossfade.from_clip.min(clip_count - 1);
+                if let Some(follower_crossfade) = crossfade.as_deref_mut() {
+                    follower_crossfade.from_clip = from_clip;
+                    follower_crossfade.to_clip = to_clip;
+                    follower_crossfade.elapsed = leader_crossfade.elapsed;
+                    follower_crossfade.duration = leader_crossfade.duration;
+                } else {
+                    commands.entity(entity).insert(VatCrossfade {
+                        from_clip,
+                        to_clip,
+                        elapsed: leader_crossfade.elapsed,
+                        duration: leader_crossfade.duration,
+                    });
+                }
+
+                if let Some(source_clip) = animation.clip(from_clip) {
+                    let offset_seconds = follower.time_offset_seconds
+                        * normalized_direction(leader_crossfade_runtime.source_direction);
+                    let source_time_seconds = normalize_synced_time(
+                        leader_crossfade_runtime.source_time_seconds + offset_seconds,
+                        resolve_loop_mode(&playback, source_clip),
+                        clip_duration_seconds(animation, source_clip),
+                    );
+                    if let Some(follower_runtime) = crossfade_runtime.as_deref_mut() {
+                        follower_runtime.source_clip = from_clip;
+                        follower_runtime.source_time_seconds = source_time_seconds;
+                        follower_runtime.source_direction =
+                            leader_crossfade_runtime.source_direction;
+                    } else {
+                        commands.entity(entity).insert(VatCrossfadeRuntime {
+                            source_clip: from_clip,
+                            source_time_seconds,
+                            source_direction: leader_crossfade_runtime.source_direction,
+                        });
+                    }
+                }
+            }
+            _ => {
+                if crossfade.is_some() {
+                    commands.entity(entity).remove::<VatCrossfade>();
+                }
+                if crossfade_runtime.is_some() {
+                    commands.entity(entity).remove::<VatCrossfadeRuntime>();
+                }
+            }
+        }
+    }
+}
+
 pub(crate) fn resolve_crossfades(
     time: Res<Time>,
     mut commands: Commands,
@@ -246,7 +399,7 @@ pub(crate) fn resolve_crossfades(
 pub(crate) fn emit_messages(
     mut clip_finished: MessageWriter<VatClipFinished>,
     mut event_reached: MessageWriter<VatEventReached>,
-    mut query: Query<(Entity, &mut VatPlaybackRuntime)>,
+    mut query: Query<(Entity, &mut VatPlaybackRuntime), Without<VatPlaybackFollower>>,
 ) {
     for (entity, mut runtime) in &mut query {
         for finish in runtime.pending_finishes.drain(..) {
@@ -738,6 +891,36 @@ fn advance_clip_time(
         finished_count,
         should_pause,
         segments,
+    }
+}
+
+fn normalize_synced_time(time_seconds: f32, loop_mode: VatLoopMode, duration_seconds: f32) -> f32 {
+    const EPSILON: f32 = 0.0001;
+
+    if duration_seconds <= EPSILON {
+        return 0.0;
+    }
+
+    match loop_mode {
+        VatLoopMode::Loop => time_seconds.rem_euclid(duration_seconds),
+        VatLoopMode::Once | VatLoopMode::ClampForever => time_seconds.clamp(0.0, duration_seconds),
+        VatLoopMode::PingPong => {
+            let span = duration_seconds * 2.0;
+            let wrapped = time_seconds.rem_euclid(span);
+            if wrapped <= duration_seconds {
+                wrapped
+            } else {
+                span - wrapped
+            }
+        }
+    }
+}
+
+fn normalized_direction(direction: f32) -> f32 {
+    if direction.abs() <= 0.0001 {
+        1.0
+    } else {
+        direction.signum()
     }
 }
 

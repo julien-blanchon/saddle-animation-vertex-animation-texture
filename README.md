@@ -15,6 +15,7 @@ Plugin:
 System sets:
 
 - `VatSystems::AdvancePlayback`
+- `VatSystems::SyncFollowers`
 - `VatSystems::ResolveTransitions`
 - `VatSystems::EmitMessages`
 - `VatSystems::SyncGpuState`
@@ -24,6 +25,7 @@ Consumer-facing components:
 - `VatAnimationSource`
 - `VatPlayback`
 - `VatCrossfade`
+- `VatPlaybackFollower`
 - `VatPlaybackTweaks`
 - `VatAnimationBundle`
 
@@ -82,6 +84,7 @@ Implemented in v0.1:
 - Multi-clip playback
 - Loop / once / ping-pong / clamp playback policies
 - Crossfade support
+- Leader/follower playback sync for modular characters, layered props, and multi-mesh actor assemblies
 - Optional separate or packed normal textures
 - Shared-material storage-buffer uploads for many independently timed entities
 - Crate-local examples and lab
@@ -100,6 +103,7 @@ Deferred / documented extension paths:
 cargo run --example basic
 cargo run --example crowd
 cargo run --example multi_clip
+cargo run --example modular_sync
 cargo run --example debug_lab
 ```
 
@@ -116,3 +120,16 @@ To request a transition, insert `VatCrossfade::new(from_clip, to_clip, duration)
 `VatPlayback.active_clip` on the currently playing source clip. The runtime captures source state,
 then switches to the target clip on the next update without needing the caller to rewrite material
 state or playback time manually.
+
+## Modular Sync
+
+To keep multiple meshes phase-aligned, add `VatPlaybackFollower` to each secondary actor and point
+it at the leader entity that owns the authoritative `VatPlayback`.
+
+- Followers mirror `active_clip` and `playing`
+- `mirror_loop_mode` optionally mirrors loop policy as well
+- `mirror_crossfade` also mirrors `VatCrossfade` transitions so modular pieces blend together
+- `time_offset_seconds` can intentionally stagger parts for layered motion
+
+This pattern is useful for crowd variants assembled from several meshes, armor layers that need to
+stay locked to a body VAT, or multi-part environment props driven by the same baked clip.

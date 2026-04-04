@@ -30,17 +30,33 @@
    - applies loop policy
    - advances crossfade source state
    - records pending events / finish notifications
-5. `VatSystems::ResolveTransitions`
+5. `VatSystems::SyncFollowers`
+   - copies authoritative playback state from leader meshes into follower meshes
+   - applies optional time offsets after loop-mode normalization
+   - mirrors active crossfade requests for modular multi-mesh actors
+6. `VatSystems::ResolveTransitions`
    - progresses and clears completed crossfades
-6. `VatSystems::EmitMessages`
+7. `VatSystems::EmitMessages`
    - emits `VatClipFinished`
    - emits `VatEventReached`
-7. `VatSystems::SyncGpuState`
+8. `VatSystems::SyncGpuState`
    - validates mesh / metadata compatibility
    - applies metadata-driven bounds and frustum-culling policy
    - groups entities by material handle
    - writes one storage-buffer entry per entity
    - assigns `MeshTag` so the shader can index the right entry
+
+## Modular Multi-Mesh Playback
+
+`VatPlaybackFollower` provides a light ECS-level sync layer for modular actors made from several
+meshes that all share the same VAT metadata layout.
+
+- The leader owns the real `VatPlayback`
+- Followers skip independent time advancement
+- The follower sync pass copies clip index, play/pause state, optional loop mode, and optional
+  crossfade state
+- Per-follower `time_offset_seconds` is applied after loop normalization so crowds and layered props
+  can intentionally stagger motion without drifting out of phase
 
 ## Material / Shader Path
 

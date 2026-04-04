@@ -3,8 +3,8 @@ use saddle_animation_vertex_animation_texture_example_support as support;
 use bevy::prelude::*;
 use saddle_animation_vertex_animation_texture::{VatMaterial, VatMaterialDefaults, VatPlayback};
 use support::{
-    demo_app, load_demo_assets, spawn_demo_camera, spawn_demo_environment, spawn_vat_actor,
-    spin_demo_lights,
+    VatPaneControlled, demo_app, load_demo_assets, spawn_demo_camera, spawn_demo_environment,
+    spawn_vat_actor, spin_demo_lights,
 };
 
 fn main() {
@@ -37,7 +37,7 @@ fn setup(
         Color::srgb(0.86, 0.92, 1.0),
     );
 
-    spawn_vat_actor(
+    let actor = spawn_vat_actor(
         &mut commands,
         "Basic VAT Mesh",
         &assets,
@@ -45,4 +45,7 @@ fn setup(
         Vec3::new(0.0, 0.0, 0.0),
         Vec3::splat(2.2),
     );
+    commands
+        .entity(actor)
+        .insert(VatPaneControlled::new(1.0, Vec3::splat(2.2)).with_clip_sync());
 }

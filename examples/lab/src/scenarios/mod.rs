@@ -8,6 +8,7 @@ pub fn list_scenarios() -> Vec<&'static str> {
         "vat_smoke",
         "vat_multi_clip",
         "vat_crowd",
+        "vat_modular_sync",
         "vat_bounds_regression",
         "vat_crossfade",
     ]
@@ -18,6 +19,7 @@ pub fn scenario_by_name(name: &str) -> Option<Scenario> {
         "vat_smoke" => Some(build_smoke()),
         "vat_multi_clip" => Some(build_multi_clip()),
         "vat_crowd" => Some(build_crowd()),
+        "vat_modular_sync" => Some(build_modular_sync()),
         "vat_bounds_regression" => Some(build_bounds_regression()),
         "vat_crossfade" => Some(build_crossfade()),
         _ => None,
@@ -111,6 +113,21 @@ fn build_crowd() -> Scenario {
         .then(Action::WaitFrames(18))
         .then(Action::Screenshot("vat_crowd_late".into()))
         .then(assertions::log_summary("vat_crowd summary"))
+        .build()
+}
+
+fn build_modular_sync() -> Scenario {
+    Scenario::builder("vat_modular_sync")
+        .description(
+            "Verify modular follower meshes stay phase-aligned with the hero while preserving their configured time offsets.",
+        )
+        .then(Action::WaitFrames(28))
+        .then(assertions::resource_satisfies::<LabDiagnostics>(
+            "modular followers exist and stay tightly synced",
+            |diagnostics| diagnostics.follower_count >= 2 && diagnostics.follower_sync_error < 0.025,
+        ))
+        .then(Action::Screenshot("vat_modular_sync".into()))
+        .then(assertions::log_summary("vat_modular_sync summary"))
         .build()
 }
 

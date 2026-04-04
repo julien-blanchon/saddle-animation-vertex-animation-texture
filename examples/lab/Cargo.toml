@@ -15,6 +15,7 @@ bevy_brp_extras = { version = "0.19", optional = true }
 saddle-bevy-e2e = { git = "https://github.com/julien-blanchon/saddle-bevy-e2e", features = ["json"], optional = true }
 saddle-animation-vertex-animation-texture = { workspace = true }
 saddle-animation-vertex-animation-texture-example-support = { path = "../support" }
+saddle-pane = { workspace = true }
 
 [lints]
 workspace = true

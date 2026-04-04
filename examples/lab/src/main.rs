@@ -12,11 +12,11 @@ use bevy::remote::{RemotePlugin, http::RemoteHttpPlugin};
 use bevy_brp_extras::BrpExtrasPlugin;
 use saddle_animation_vertex_animation_texture::{
     VatClipFinished, VatCrossfade, VatEventReached, VatMaterial, VatMaterialDefaults, VatPlayback,
-    VatPlaybackTweaks,
+    VatPlaybackFollower, VatPlaybackTweaks,
 };
 use support::{
-    demo_app, load_demo_assets, spawn_demo_camera, spawn_demo_environment, spawn_overlay,
-    spawn_vat_actor, spin_demo_lights, write_overlay,
+    VatFollowerOffsetScale, demo_app, load_demo_assets, spawn_demo_camera,
+    spawn_demo_environment, spawn_overlay, spawn_vat_actor, spin_demo_lights, write_overlay,
 };
 
 #[derive(Component)]
@@ -27,6 +27,9 @@ pub struct CrowdMember;
 
 #[derive(Component)]
 pub struct BoundsProbe;
+
+#[derive(Component)]
+pub struct HeroFollower;
 
 #[derive(Component)]
 struct Overlay;
@@ -63,6 +66,8 @@ pub struct LabDiagnostics {
     pub crowd_phase_span: f32,
     pub bounds_probe_visible: bool,
     pub crossfade_active: bool,
+    pub follower_sync_error: f32,
+    pub follower_count: u32,
 }
 
 fn main() {
@@ -137,6 +142,23 @@ fn setup(
     commands
         .entity(hero)
         .insert((Hero, VatPlaybackTweaks::default()));
+
+    for (index, x) in [0.9_f32, 2.2_f32].into_iter().enumerate() {
+        let follower_scale = Vec3::splat(1.65 - index as f32 * 0.1);
+        let follower = spawn_vat_actor(
+            &mut commands,
+            &format!("Hero Follower {}", index + 1),
+            &assets,
+            VatPlayback::default(),
+            Vec3::new(x, 0.0, -0.55 - index as f32 * 0.25),
+            follower_scale,
+        );
+        commands.entity(follower).insert((
+            HeroFollower,
+            VatPlaybackFollower::new(hero),
+            VatFollowerOffsetScale(index as f32 + 1.0),
+        ));
+    }
 
     let probe = spawn_vat_actor(
         &mut commands,
@@ -252,6 +274,7 @@ fn refresh_diagnostics(
     mut diagnostics: ResMut<LabDiagnostics>,
     hero: Single<(&VatPlayback, Option<&VatCrossfade>), With<Hero>>,
     crowd: Query<&VatPlayback, With<CrowdMember>>,
+    followers: Query<(&VatPlaybackFollower, &VatPlayback), With<HeroFollower>>,
     probe_visibility: Single<&ViewVisibility, With<BoundsProbe>>,
 ) {
     diagnostics.hero_clip = hero.0.active_clip;
@@ -271,6 +294,15 @@ fn refresh_diagnostics(
     } else {
         0.0
     };
+
+    diagnostics.follower_count = followers.iter().count() as u32;
+    diagnostics.follower_sync_error = followers
+        .iter()
+        .map(|(follower, playback)| {
+            let expected = diagnostics.hero_time + follower.time_offset_seconds;
+            (playback.time_seconds - expected).abs()
+        })
+        .fold(0.0, f32::max);
 }
 
 fn update_overlay(
@@ -285,7 +317,7 @@ fn update_overlay(
         &mut text,
         "VAT crate-local lab",
         &format!(
-            "hero clip: {}\nhero time: {:.2}\nplaying: {}\ninterpolation: {}\nlast event: {}\nfinishes: {}\ncrowd span: {:.2}\nbounds probe visible: {}\ncrossfade active: {}\n\nauto: {}\nkeys: 1/2/3 clips, Space pause, I interpolation",
+            "hero clip: {}\nhero time: {:.2}\nplaying: {}\ninterpolation: {}\nlast event: {}\nfinishes: {}\ncrowd span: {:.2}\nfollowers: {} (max sync error {:.3})\nbounds probe visible: {}\ncrossfade active: {}\n\nauto: {}\nkeys: 1/2/3 clips, Space pause, I interpolation",
             diagnostics.hero_clip,
             diagnostics.hero_time,
             diagnostics.hero_playing,
@@ -297,6 +329,8 @@ fn update_overlay(
             },
             diagnostics.finish_count,
             diagnostics.crowd_phase_span,
+            diagnostics.follower_count,
+            diagnostics.follower_sync_error,
             diagnostics.bounds_probe_visible,
             diagnostics.crossfade_active,
             control.auto,

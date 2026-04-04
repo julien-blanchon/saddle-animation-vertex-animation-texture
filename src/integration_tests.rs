@@ -9,9 +9,9 @@ use bevy::{
 use crate::{
     VatAnimationData, VatAnimationMode, VatAnimationSource, VatBoundsMode, VatClip,
     VatCoordinateSystem, VatMaterial, VatMaterialDefaults, VatNormalTexture, VatPlayback,
-    VatPlaybackSpace, VatPositionEncoding, VatSourceFormat, VatTextureDescriptor,
-    VatTexturePrecision, VatVertexIdAttribute, VertexAnimationTexturePlugin, build_vat_material,
-    make_linear_rgba8_image,
+    VatPlaybackFollower, VatPlaybackSpace, VatPositionEncoding, VatSourceFormat,
+    VatTextureDescriptor, VatTexturePrecision, VatVertexIdAttribute, VertexAnimationTexturePlugin,
+    build_vat_material, make_linear_rgba8_image,
     systems::{VatBindingFailure, VatBindingReady},
 };
 
@@ -254,6 +254,106 @@ fn multiple_entities_can_animate_independently() {
         .get(&material.extension.instances)
         .unwrap();
     assert!(buffer.data.as_ref().is_some_and(|bytes| !bytes.is_empty()));
+}
+
+#[test]
+fn follower_entities_sync_to_their_leader() {
+    let mut app = test_app();
+    app.add_plugins(VertexAnimationTexturePlugin::new(
+        TestActivate,
+        TestDeactivate,
+        TestUpdate,
+    ));
+
+    let mut animation = make_animation(4);
+    animation.clips = vec![
+        VatClip {
+            name: "idle".into(),
+            start_frame: 0,
+            end_frame: 3,
+            default_loop_mode: Some(crate::VatLoopMode::Loop),
+            events: Vec::new(),
+        },
+        VatClip {
+            name: "surge".into(),
+            start_frame: 4,
+            end_frame: 7,
+            default_loop_mode: Some(crate::VatLoopMode::Loop),
+            events: Vec::new(),
+        },
+    ];
+    let (position_texture, normal_texture) = make_textures(4);
+    let animation_handle = app
+        .world_mut()
+        .resource_mut::<Assets<VatAnimationData>>()
+        .add(animation.clone());
+    let position_texture_handle = app
+        .world_mut()
+        .resource_mut::<Assets<Image>>()
+        .add(position_texture);
+    let normal_texture_handle = app
+        .world_mut()
+        .resource_mut::<Assets<Image>>()
+        .add(normal_texture);
+    let mesh_handle = app
+        .world_mut()
+        .resource_mut::<Assets<Mesh>>()
+        .add(make_mesh(true));
+
+    let defaults = app.world().resource::<VatMaterialDefaults>().clone();
+    let material = {
+        let mut buffers = app
+            .world_mut()
+            .resource_mut::<Assets<ShaderStorageBuffer>>();
+        build_vat_material(
+            StandardMaterial::default(),
+            &animation,
+            position_texture_handle,
+            Some(normal_texture_handle),
+            &defaults,
+            &mut buffers,
+        )
+        .unwrap()
+    };
+    let material_handle = app
+        .world_mut()
+        .resource_mut::<Assets<VatMaterial>>()
+        .add(material);
+
+    let leader = app
+        .world_mut()
+        .spawn((
+            Mesh3d(mesh_handle.clone()),
+            MeshMaterial3d(material_handle.clone()),
+            VatAnimationSource::new(animation_handle.clone()),
+            VatPlayback::default().with_time_seconds(0.25).with_clip(1),
+        ))
+        .id();
+    let follower = app
+        .world_mut()
+        .spawn((
+            Mesh3d(mesh_handle),
+            MeshMaterial3d(material_handle),
+            VatAnimationSource::new(animation_handle),
+            VatPlayback::default(),
+            VatPlaybackFollower::new(leader).with_time_offset_seconds(0.1),
+        ))
+        .id();
+
+    app.world_mut().run_schedule(TestActivate);
+    app.world_mut().run_schedule(TestUpdate);
+
+    let (leader_playback, follower_playback) = {
+        let world = app.world_mut();
+        let leader_playback = world.get::<VatPlayback>(leader).unwrap().clone();
+        let follower_playback = world.get::<VatPlayback>(follower).unwrap().clone();
+        (leader_playback, follower_playback)
+    };
+
+    assert_eq!(leader_playback.active_clip, 1);
+    assert_eq!(follower_playback.active_clip, leader_playback.active_clip);
+    assert!((follower_playback.time_seconds - 0.35).abs() <= 0.0001);
+    assert_eq!(follower_playback.playing, leader_playback.playing);
 }
 
 #[test]

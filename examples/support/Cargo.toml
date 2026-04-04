@@ -7,6 +7,10 @@ publish = false
 [dependencies]
 bevy = { workspace = true }
 saddle-animation-vertex-animation-texture = { workspace = true }
+bevy_flair = { workspace = true }
+bevy_input_focus = { workspace = true }
+bevy_ui_widgets = { workspace = true }
+saddle-pane = { workspace = true }
 
 [lints]
 workspace = true

@@ -8,8 +8,10 @@ use bevy::{
     prelude::*,
     render::{render_resource::PrimitiveTopology, storage::ShaderStorageBuffer},
 };
+use saddle_pane::prelude::*;
 use saddle_animation_vertex_animation_texture::{
-    VatAnimationData, VatAnimationSource, VatMaterial, VatMaterialDefaults, VatPlayback,
+    VatAnimationData, VatAnimationSource, VatCrossfade, VatMaterial, VatMaterialDefaults,
+    VatPlayback, VatPlaybackFollower, VatPlaybackTweaks,
     VertexAnimationTexturePlugin, build_vat_material, make_linear_rgba8_image,
     parse_vat_animation_data_str,
 };
@@ -40,6 +42,75 @@ pub struct DemoOverlay;
 #[derive(Resource)]
 struct AutoExitAfter(Timer);
 
+#[derive(Resource, Debug, Clone, Copy, Pane)]
+#[pane(title = "VAT Demo", position = "top-right")]
+pub struct VatExamplePane {
+    #[pane(toggle)]
+    pub playing: bool,
+    #[pane(slider, min = 0.25, max = 2.5, step = 0.05)]
+    pub speed_multiplier: f32,
+    #[pane(toggle)]
+    pub disable_interpolation: bool,
+    #[pane(slider, min = 0.6, max = 2.8, step = 0.05)]
+    pub scene_scale: f32,
+    #[pane(slider, min = 0.05, max = 1.5, step = 0.05)]
+    pub crossfade_duration: f32,
+    #[pane(slider, min = -0.8, max = 0.8, step = 0.05)]
+    pub follower_offset_seconds: f32,
+    #[pane(slider, min = 0.0, max = 2.0, step = 1.0)]
+    pub clip_index: i32,
+    #[pane(monitor)]
+    pub actor_count: u32,
+    #[pane(monitor)]
+    pub active_crossfades: u32,
+    #[pane(monitor)]
+    pub leader_time_seconds: f32,
+}
+
+impl Default for VatExamplePane {
+    fn default() -> Self {
+        Self {
+            playing: true,
+            speed_multiplier: 1.0,
+            disable_interpolation: false,
+            scene_scale: 1.0,
+            crossfade_duration: 0.45,
+            follower_offset_seconds: 0.18,
+            clip_index: 0,
+            actor_count: 0,
+            active_crossfades: 0,
+            leader_time_seconds: 0.0,
+        }
+    }
+}
+
+#[derive(Component, Debug, Clone, Copy)]
+pub struct VatPaneControlled {
+    pub base_speed: f32,
+    pub base_scale: Vec3,
+    pub sync_clip: bool,
+}
+
+impl VatPaneControlled {
+    #[must_use]
+    pub fn new(base_speed: f32, base_scale: Vec3) -> Self {
+        Self {
+            base_speed,
+            base_scale,
+            sync_clip: false,
+        }
+    }
+
+    #[must_use]
+    pub fn with_clip_sync(mut self) -> Self {
+        self.sync_clip = true;
+        self
+    }
+}
+
+#[derive(Component, Debug, Clone, Copy, Deref, DerefMut)]
+pub struct VatFollowerOffsetScale(pub f32);
+
 pub fn demo_app(title: &str) -> App {
     let mut app = App::new();
     app.insert_resource(ClearColor(Color::srgb(0.06, 0.07, 0.10)));
@@ -56,7 +127,18 @@ pub fn demo_app(title: &str) -> App {
         }),
         ..default()
     }));
+    app.init_resource::<VatExamplePane>();
+    app.add_plugins((
+        bevy_flair::FlairPlugin,
+        bevy_input_focus::InputDispatchPlugin,
+        bevy_ui_widgets::UiWidgetsPlugins,
+        bevy_input_focus::tab_navigation::TabNavigationPlugin,
+        PanePlugin,
+    ))
+    .register_pane::<VatExamplePane>();
     app.add_plugins(VertexAnimationTexturePlugin::default());
+    app.add_systems(PreUpdate, sync_vat_pane);
+    app.add_systems(PostUpdate, reflect_vat_pane);
     install_auto_exit(&mut app);
     app
 }
@@ -180,6 +262,8 @@ pub fn spawn_vat_actor(
             Mesh3d(assets.mesh.clone()),
             MeshMaterial3d(assets.material.clone()),
             VatAnimationSource::new(assets.animation.clone()),
+            VatPlaybackTweaks::default(),
+            VatPaneControlled::new(playback.speed, scale),
             playback,
             Transform::from_translation(translation).with_scale(scale),
         ))
@@ -227,6 +311,68 @@ pub fn spin_demo_lights(time: Res<Time>, mut query: Query<(&DemoSpinner, &mut Tr
     for (spinner, mut transform) in &mut query {
         transform.rotate_axis(spinner.axis, spinner.speed * time.delta_secs());
     }
+}
+
+fn sync_vat_pane(
+    pane: Res<VatExamplePane>,
+    mut commands: Commands,
+    mut query: Query<(
+        Entity,
+        &VatPaneControlled,
+        &mut VatPlayback,
+        &mut VatPlaybackTweaks,
+        &mut Transform,
+        Option<&mut VatPlaybackFollower>,
+        Option<&VatFollowerOffsetScale>,
+    )>,
+) {
+    let requested_clip = pane.clip_index.max(0) as usize;
+    for (entity, control, mut playback, mut tweaks, mut transform, follower, follower_scale) in
+        &mut query
+    {
+        playback.playing = pane.playing;
+        playback.speed = control.base_speed * pane.speed_multiplier.max(0.0);
+        tweaks.disable_interpolation = pane.disable_interpolation;
+        transform.scale = control.base_scale * pane.scene_scale.max(0.1);
+
+        if let Some(mut follower) = follower {
+            let scale = follower_scale.map_or(1.0, |scale| scale.0);
+            follower.time_offset_seconds = pane.follower_offset_seconds * scale;
+        }
+
+        if control.sync_clip && playback.active_clip != requested_clip {
+            commands.entity(entity).insert(VatCrossfade::new(
+                playback.active_clip,
+                requested_clip,
+                pane.crossfade_duration.max(0.05),
+            ));
+        }
+    }
+}
+
+fn reflect_vat_pane(
+    mut pane: ResMut<VatExamplePane>,
+    query: Query<(&VatPlayback, Option<&VatCrossfade>, Option<&VatPlaybackFollower>), With<VatPaneControlled>>,
+) {
+    let mut actor_count = 0;
+    let mut active_crossfades = 0;
+    let mut leader_time_seconds = 0.0;
+    let mut captured_leader = false;
+
+    for (playback, crossfade, follower) in &query {
+        actor_count += 1;
+        if crossfade.is_some() {
+            active_crossfades += 1;
+        }
+        if !captured_leader && follower.is_none() {
+            leader_time_seconds = playback.time_seconds;
+            captured_leader = true;
+        }
+    }
+
+    pane.actor_count = actor_count;
+    pane.active_crossfades = active_crossfades;
+    pane.leader_time_seconds = leader_time_seconds;
 }
 
 fn build_demo_mesh() -> Mesh {
