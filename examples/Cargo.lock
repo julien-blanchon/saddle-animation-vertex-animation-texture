@@ -4946,6 +4946,9 @@ name = "saddle-animation-vertex-animation-texture-example-basic"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_flair",
+ "bevy_input_focus",
+ "bevy_ui_widgets",
  "saddle-animation-vertex-animation-texture",
  "saddle-animation-vertex-animation-texture-example-support",
  "saddle-pane",
@@ -4956,6 +4959,9 @@ name = "saddle-animation-vertex-animation-texture-example-crowd"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_flair",
+ "bevy_input_focus",
+ "bevy_ui_widgets",
  "saddle-animation-vertex-animation-texture",
  "saddle-animation-vertex-animation-texture-example-support",
  "saddle-pane",
@@ -4976,6 +4982,9 @@ name = "saddle-animation-vertex-animation-texture-example-modular-sync"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_flair",
+ "bevy_input_focus",
+ "bevy_ui_widgets",
  "saddle-animation-vertex-animation-texture",
  "saddle-animation-vertex-animation-texture-example-support",
  "saddle-pane",
