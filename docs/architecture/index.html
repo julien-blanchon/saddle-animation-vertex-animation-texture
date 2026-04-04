@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<script>
+			(() => {
+				document.documentElement.classList.add('js');
+				const storageKey = 'docs-theme';
+				const storedTheme = localStorage.getItem(storageKey);
+				const isDark =
+					storedTheme === 'dark' ||
+					(storedTheme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+				document.documentElement.classList.toggle('dark', isDark);
+				document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+			})();
+		</script>
+		<link href="../../_app/immutable/entry/start.BQAQ9ZE8.js" rel="modulepreload">
+		<link href="../../_app/immutable/chunks/C9-aUA_O.js" rel="modulepreload">
+		<link href="../../_app/immutable/chunks/D6rU7RKI.js" rel="modulepreload">
+		<link href="../../_app/immutable/entry/app.laZJv4X_.js" rel="modulepreload">
+		<link href="../../_app/immutable/chunks/D2PL5qU_.js" rel="modulepreload">
+		<link href="../../_app/immutable/chunks/DsnmJJEf.js" rel="modulepreload">
+		<link href="../../_app/immutable/chunks/CGbRUU1n.js" rel="modulepreload">
+		<link href="../../_app/immutable/nodes/0.B5AzXQWS.js" rel="modulepreload">
+		<link href="../../_app/immutable/chunks/BbR_TR3S.js" rel="modulepreload">
+		<link href="../../_app/immutable/chunks/Be7EYB7h.js" rel="modulepreload">
+		<link href="../../_app/immutable/chunks/D3udy8KQ.js" rel="modulepreload">
+		<link href="../../_app/immutable/nodes/2.DqoZ3G3Y.js" rel="modulepreload">
+		<link href="../../_app/immutable/chunks/DGZ-VjKz.js" rel="modulepreload">
+		<link href="../../_app/immutable/nodes/5.BOp3_yHr.js" rel="modulepreload">
+		<link href="../../_app/immutable/chunks/O7QY0ZL7.js" rel="modulepreload">
+		<!--12qhfyh--><meta name="theme-color" content="#ffffff"/> <link rel="icon" type="image/svg+xml" href="../../favicon.svg"/> <meta name="description" content="GPU vertex animation texture playback for Bevy PBR"/><!----><!--1bpnej--><!--[0--><meta name="description" content="Architecture documentation"/><!--]--><!----><title>Architecture - saddle-animation-vertex-animation-texture</title>
+		<link href="../../_app/immutable/assets/manifest.DAGDUwuc.css" rel="stylesheet">
+		<link href="../../_app/immutable/assets/0.Cu___w4E.css" rel="stylesheet">
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents"><!--[--><!--[0--><!--[--><!--[0--><!--[--><main class="relative h-dvh bg-background text-foreground"><div class="fixed inset-x-0 top-0 z-50 flex items-center justify-between border-b border-border bg-background px-4 py-1.5 lg:hidden"><a href="../../" class="inline-flex items-center gap-1 px-2 py-2 text-sm tracking-tight text-foreground"><span class="font-medium tracking-tight text-foreground">saddle-animation-vertex-animation-texture</span></a> <button class="-mr-2 inline-flex size-10 items-center justify-center gap-2 rounded-sm text-sm whitespace-nowrap text-foreground transition-colors duration-150 ease-out hover:bg-background-muted lg:hidden" aria-label="Toggle menu"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" preserveAspectRatio="xMidYMid meet" width="20" height="20" aria-hidden="true"><!--[-1--><!--]--><path d="M4 6H28V8H4z"></path><path d="M4 24H28V26H4z"></path><path d="M4 12H28V14H4z"></path><path d="M4 18H28V20H4z"></path></svg><!----></button></div> <!--[-1--><!--]--><!----> <div class="flex h-full w-full min-w-0 lg:grid lg:grid-cols-[22rem_minmax(0,1fr)] lg:pr-4 xl:grid-cols-[22rem_minmax(0,56rem)_18rem] xl:justify-center"><div class="hidden lg:block"><aside class="flex h-dvh flex-col bg-background" aria-label="Documentation sidebar"><div class="flex flex-col gap-4 p-4"><a href="../../" class="flex items-center gap-2"><span class="text-xl font-medium tracking-tight text-foreground">saddle-animation-vertex-animation-texture</span></a> <!--[0--><button type="button" class="group inset-shadow relative flex h-9 w-full items-center gap-2 rounded-sm bg-background-inset px-3 py-1.5 text-sm font-medium text-foreground-muted/70 transition-[color] duration-150 ease-out hover:text-foreground-muted"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" preserveAspectRatio="xMidYMid meet" width="16" height="16" aria-hidden="true" class="text-foreground-muted/70"><!--[-1--><!--]--><path d="M29,27.5859l-7.5521-7.5521a11.0177,11.0177,0,1,0-1.4141,1.4141L27.5859,29ZM4,13a9,9,0,1,1,9,9A9.01,9.01,0,0,1,4,13Z"></path></svg><!----> <span class="flex-1 text-left">Search...</span> <!--[0--><kbd class="card pointer-events-none relative hidden h-5 items-center gap-1 rounded-xs bg-background px-1.5 font-mono text-[10px] font-medium text-foreground-muted/70 select-none sm:flex">⌘ K</kbd><!--]--></button><!--]--><!----></div> <div class="relative flex flex-col overflow-hidden flex-1 svelte-1lcbi17"><div class="scrollbar-hide min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto p-4 svelte-1lcbi17" style="mask-image: linear-gradient(to bottom, transparent, black 16px, black calc(100% - 16px), transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 16px, black calc(100% - 16px), transparent);"><nav class="flex flex-col space-y-1" aria-label="Documentation pages"><h4 class="mb-2 ml-2 text-xs font-medium tracking-wide text-foreground-muted/70 uppercase">Docs</h4> <!--[--><!--[-1--><a href="../../" class="block rounded-sm px-3 py-1.5 text-sm tracking-normal transition-all duration-150 ease-out text-foreground-muted hover:bg-background-muted hover:text-foreground">Overview</a><!--]--><!--[0--><button class="flex w-full items-center justify-between rounded-sm px-3 py-1.5 text-sm font-medium tracking-normal transition-all duration-150 ease-out hover:bg-background-muted hover:text-foreground text-foreground-muted"><span>Documentation</span> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" preserveAspectRatio="xMidYMid meet" width="16" height="16" aria-hidden="true" class="size-4 transition-transform duration-150"><!--[-1--><!--]--><path d="M22 16 12 26 10.6 24.6 19.2 16 10.6 7.4 12 6z"></path></svg><!----></button> <!--[-1--><!--]--><!--]--><!--[0--><button class="flex w-full items-center justify-between rounded-sm px-3 py-1.5 text-sm font-medium tracking-normal transition-all duration-150 ease-out hover:bg-background-muted hover:text-foreground text-foreground-muted"><span>Demos</span> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" preserveAspectRatio="xMidYMid meet" width="16" height="16" aria-hidden="true" class="size-4 transition-transform duration-150"><!--[-1--><!--]--><path d="M22 16 12 26 10.6 24.6 19.2 16 10.6 7.4 12 6z"></path></svg><!----></button> <!--[-1--><!--]--><!--]--><!--]--></nav><!----></div></div><!----> <div class="flex items-center gap-1 p-4"><!--[0--><button type="button" class="group transition-scale inset-shadow relative inline-flex size-7 items-center justify-center rounded-sm bg-background-inset text-foreground duration-150 ease-out active:scale-[0.95]" aria-label="Switch to dark mode"><span class="sr-only">Switch to dark mode</span> <span class="transition-transform duration-150 ease-out"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" preserveAspectRatio="xMidYMid meet" width="16" height="16" aria-hidden="true"><!--[-1--><!--]--><path d="M16,12a4,4,0,1,1-4,4,4.0045,4.0045,0,0,1,4-4m0-2a6,6,0,1,0,6,6,6,6,0,0,0-6-6Z" transform="translate(0 .005)"></path><path d="M6.854 5.375H8.854V10.333H6.854z" transform="rotate(-45 7.86 7.856)"></path><path d="M2 15.005H7V17.005000000000003H2z"></path><path d="M5.375 23.147H10.333V25.147H5.375z" transform="rotate(-45 7.86 24.149)"></path><path d="M15 25.005H17V30.005H15z"></path><path d="M23.147 21.668H25.147V26.625999999999998H23.147z" transform="rotate(-45 24.152 24.149)"></path><path d="M25 15.005H30V17.005000000000003H25z"></path><path d="M21.668 6.854H26.625999999999998V8.854H21.668z" transform="rotate(-45 24.152 7.856)"></path><path d="M15 2.005H17V7.005H15z"></path></svg><!----></span> <span class="absolute transition-transform duration-150 ease-out scale-0 blur-[2px]"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" preserveAspectRatio="xMidYMid meet" width="16" height="16" aria-hidden="true"><!--[-1--><!--]--><path d="M13.5025,5.4136A15.0755,15.0755,0,0,0,25.096,23.6082a11.1134,11.1134,0,0,1-7.9749,3.3893c-.1385,0-.2782.0051-.4178,0A11.0944,11.0944,0,0,1,13.5025,5.4136M14.98,3a1.0024,1.0024,0,0,0-.1746.0156A13.0959,13.0959,0,0,0,16.63,28.9973c.1641.006.3282,0,.4909,0a13.0724,13.0724,0,0,0,10.702-5.5556,1.0094,1.0094,0,0,0-.7833-1.5644A13.08,13.08,0,0,1,15.8892,4.38,1.0149,1.0149,0,0,0,14.98,3Z"></path></svg><!----></span></button><!--]--> <!--[0--><a class="group transition-scale inset-shadow relative inline-flex size-7 cursor-pointer items-center justify-center rounded-sm bg-background-inset text-foreground duration-150 ease-out active:scale-[0.95]" href="https://github.com/julien-blanchon/saddle-animation-vertex-animation-texture" target="_blank" rel="noreferrer" aria-label="Open project repository (opens in a new tab)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" preserveAspectRatio="xMidYMid meet" width="16" height="16" aria-hidden="true" class="size-4 flex-none"><!--[-1--><!--]--><path fill-rule="evenodd" d="M16,2a14,14,0,0,0-4.43,27.28c.7.13,1-.3,1-.67s0-1.21,0-2.38c-3.89.84-4.71-1.88-4.71-1.88A3.71,3.71,0,0,0,6.24,22.3c-1.27-.86.1-.85.1-.85A2.94,2.94,0,0,1,8.48,22.9a3,3,0,0,0,4.08,1.16,2.93,2.93,0,0,1,.88-1.87c-3.1-.36-6.37-1.56-6.37-6.92a5.4,5.4,0,0,1,1.44-3.76,5,5,0,0,1,.14-3.7s1.17-.38,3.85,1.43a13.3,13.3,0,0,1,7,0c2.67-1.81,3.84-1.43,3.84-1.43a5,5,0,0,1,.14,3.7,5.4,5.4,0,0,1,1.44,3.76c0,5.38-3.27,6.56-6.39,6.91a3.33,3.33,0,0,1,.95,2.59c0,1.87,0,3.38,0,3.84s.25.81,1,.67A14,14,0,0,0,16,2Z"></path></svg><!----></a><!--]--></div></aside><!----></div> <div class="inset-shadow relative mx-auto h-full w-full max-w-4xl min-w-0 overflow-hidden border border-border bg-background-inset pt-12 lg:my-4 lg:max-h-[calc(100dvh-2rem)] lg:overflow-visible lg:rounded-xl lg:pt-0"><div class="relative flex flex-col overflow-hidden mx-auto h-full w-full lg:max-h-[calc(100dvh-2rem)] svelte-1lcbi17"><div id="docs-content-container" class="scrollbar-hide min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto rounded-lg overscroll-none flex flex-col gap-8 px-4 py-8 lg:px-8 svelte-1lcbi17" style="mask-image: linear-gradient(to bottom, transparent, black 16px, black calc(100% - 16px), transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 16px, black calc(100% - 16px), transparent);"><section class="min-w-0 flex-1 space-y-8"><div class="space-y-4"><!--[-1--><!--]--> <h1 class="scroll-m-20 text-3xl font-medium tracking-tight text-foreground">Architecture</h1> <!--[0--><p class="max-w-4xl text-base font-normal tracking-normal text-foreground-muted">Architecture documentation</p><!--]--> <!--[0--><!--[0--><div class="relative z-20 mt-8 flex w-full gap-2 lg:hidden"><!--[0--><div class="inset-shadow w-full rounded-md bg-background-inset p-1.5"><button type="button" aria-live="polite" aria-disabled="false" class="card relative inline-flex h-9 w-full font-medium shrink-0 overflow-hidden items-center justify-center gap-2 rounded-sm bg-background px-4 py-2 text-sm whitespace-nowrap text-foreground transition-[background-color] duration-150 ease-out hover:bg-background-muted disabled:pointer-events-none disabled:opacity-50 has-[>svg]:px-3 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*=size-])]:size-4 flex-1"><span class="grid place-items-center" style="grid-template-areas: 'content';"><!----><span class="flex items-center gap-2 font-medium tracking-normal text-foreground will-change-transform" style="grid-area: content;"><!--[-1--><svg role="img" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-4 flex-none"><title>Markdown</title><path class="stroke-current" d="M1.212 5.5h21.576c.407 0 .712.317.712.679v11.549a.695.695 0 0 1-.712.677H1.212a.695.695 0 0 1-.712-.678V6.18c0-.362.305-.679.712-.679Z"></path><path class="fill-current" d="M3.03 15.96V7.946h2.425l2.424 2.946 2.424-2.946h2.424v8.014h-2.424v-4.596L7.88 14.31l-2.424-2.946v4.596H3.03Zm15.152 0-3.636-3.89h2.424V7.947h2.424v4.125h2.424l-3.636 3.889Z"></path></svg><!--]--> <span>Copy Markdown</span></span><!----></span></button></div><!--]--> <!--[0--><div class="inset-shadow relative rounded-md bg-background-inset p-1.5"><button id="mobile-doc-actions-menu-trigger" type="button" class="card relative inline-flex h-9 w-full font-medium shrink-0 overflow-hidden items-center justify-center gap-2 rounded-sm bg-background px-4 py-2 text-sm whitespace-nowrap text-foreground transition-[background-color] duration-150 ease-out hover:bg-background-muted disabled:pointer-events-none disabled:opacity-50 has-[>svg]:px-3 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*=size-])]:size-4 flex-1 w-auto! px-2.5!" aria-label="More actions" aria-haspopup="menu" aria-controls="mobile-doc-actions-menu" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" preserveAspectRatio="xMidYMid meet" width="16" height="16" aria-hidden="true" class="size-4"><!--[-1--><!--]--><circle cx="8" cy="16" r="2"></circle><circle cx="16" cy="16" r="2"></circle><circle cx="24" cy="16" r="2"></circle></svg><!----></button> <!--[-1--><!--]--></div><!--]--></div><!--]--><!--]--></div> <hr class="text-border"/> <div><!--[--><article data-doc-content="" class="w-full max-w-4xl"><!----><h2>Overview</h2>
+<p><code>saddle-animation-vertex-animation-texture</code> splits VAT playback into four layers:</p>
+<ol>
+<li>Metadata<ul>
+<li><code>VatAnimationData</code> is the canonical runtime description of a bake.</li>
+<li>JSON loaders normalize source metadata into this one internal shape.</li>
+</ul>
+</li>
+<li>ECS playback<ul>
+<li><code>VatPlayback</code> and <code>VatCrossfade</code> are the consumer-facing state.</li>
+<li>Systems advance time, resolve loop policy, emit events, and prepare GPU frame selections.</li>
+</ul>
+</li>
+<li>Material state<ul>
+<li><code>VatMaterialExt</code> owns the data textures, decode uniforms, and a storage buffer handle.</li>
+<li><code>MeshTag</code> is used as the per-entity index into the storage buffer.</li>
+</ul>
+</li>
+<li>Shader deformation<ul>
+<li>The vertex shader samples frame A and frame B, interpolates, optionally crossfades a secondary clip, and feeds the result into Bevy PBR.</li>
+</ul>
+</li>
+</ol>
+<h2>Runtime Data Flow</h2>
+<ol>
+<li>Load or construct <code>VatAnimationData</code>.</li>
+<li>Build a <code>VatMaterial</code> with <code>build_vat_material(...)</code>.</li>
+<li>Spawn a mesh with:<ul>
+<li><code>Mesh3d</code></li>
+<li><code>MeshMaterial3d&lt;VatMaterial&gt;</code></li>
+<li><code>VatAnimationSource</code></li>
+<li><code>VatPlayback</code></li>
+</ul>
+</li>
+<li><code>VatSystems::AdvancePlayback</code><ul>
+<li>advances clip-local time</li>
+<li>applies loop policy</li>
+<li>advances crossfade source state</li>
+<li>records pending events / finish notifications</li>
+</ul>
+</li>
+<li><code>VatSystems::SyncFollowers</code><ul>
+<li>copies authoritative playback state from leader meshes into follower meshes</li>
+<li>applies optional time offsets after loop-mode normalization</li>
+<li>mirrors active crossfade requests for modular multi-mesh actors</li>
+</ul>
+</li>
+<li><code>VatSystems::ResolveTransitions</code><ul>
+<li>progresses and clears completed crossfades</li>
+</ul>
+</li>
+<li><code>VatSystems::EmitMessages</code><ul>
+<li>emits <code>VatClipFinished</code></li>
+<li>emits <code>VatEventReached</code></li>
+</ul>
+</li>
+<li><code>VatSystems::SyncGpuState</code><ul>
+<li>validates mesh / metadata compatibility</li>
+<li>applies metadata-driven bounds and frustum-culling policy</li>
+<li>groups entities by material handle</li>
+<li>writes one storage-buffer entry per entity</li>
+<li>assigns <code>MeshTag</code> so the shader can index the right entry</li>
+</ul>
+</li>
+</ol>
+<h2>Modular Multi-Mesh Playback</h2>
+<p><code>VatPlaybackFollower</code> provides a light ECS-level sync layer for modular actors made from several
+meshes that all share the same VAT metadata layout.</p>
+<ul>
+<li>The leader owns the real <code>VatPlayback</code></li>
+<li>Followers skip independent time advancement</li>
+<li>The follower sync pass copies clip index, play/pause state, optional loop mode, and optional
+crossfade state</li>
+<li>Per-follower <code>time_offset_seconds</code> is applied after loop normalization so crowds and layered props
+can intentionally stagger motion without drifting out of phase</li>
+</ul>
+<h2>Material / Shader Path</h2>
+<p>The primary render path is:</p>
+<p><code>ExtendedMaterial&lt;StandardMaterial, VatMaterialExt&gt;</code></p>
+<p>Bindings:</p>
+<ul>
+<li><code>100</code>: position texture</li>
+<li><code>101</code>: position sampler</li>
+<li><code>102</code>: normal texture</li>
+<li><code>103</code>: normal sampler</li>
+<li><code>104</code>: decode/layout uniform</li>
+<li><code>105</code>: per-entity storage buffer</li>
+</ul>
+<p>The shader uses mesh UV1 as the baked vertex lookup channel. UV1 is interpreted as a texel-center lookup into the first frame layout. The shader then offsets the row by <code>frame_index * rows_per_frame</code>.</p>
+<h2>Bounds and Culling</h2>
+<p>Static proxy bounds are usually wrong for VAT motion extremes. The crate addresses this in two ways:</p>
+<ul>
+<li><code>VatBoundsMode::UseMetadataAabb</code><ul>
+<li>Inserts an <code>Aabb</code> derived from <code>VatAnimationData::animation_bounds_*</code></li>
+</ul>
+</li>
+<li><code>VatBoundsMode::DisableFrustumCulling</code><ul>
+<li>Adds <code>NoFrustumCulling</code></li>
+</ul>
+</li>
+</ul>
+<p>World-space playback also disables built-in frustum culling because proxy-local bounds are not reliable there.</p>
+<h2>Current Scope</h2>
+<p>Shipped now:</p>
+<ul>
+<li>fixed-topology soft-body VAT</li>
+<li>local-space or world-space metadata flags</li>
+<li>separate or packed normal textures</li>
+<li>multi-clip playback</li>
+<li>shared-material storage-buffer uploads</li>
+</ul>
+<p>Deferred:</p>
+<ul>
+<li>rigid-body VAT rotation / pivot textures</li>
+<li>auxiliary shading channels in the shader path</li>
+<li>advanced GPU-side instancing extraction beyond the material storage-buffer path</li>
+</ul>
+<!----></article> <!----><!--]--><!----> <!--[-1--><!--]--><!----></div></section><!----></div></div><!----></div> <aside class="hidden xl:block xl:w-full xl:py-8 xl:pr-4 xl:pl-4" aria-label="Table of contents and document actions"><div class="sticky top-8 flex h-full max-h-[calc(100dvh-4rem)] min-h-0 flex-col"><!--[0--><div class="min-h-0 flex-1"><div class="contents"><!--[-1--><div class="hidden text-sm tracking-normal text-foreground-muted/70 lg:block">No headings</div><!--]--></div><!----></div><!--]--> <!--[0--><!--[0--><div class="mt-auto"><div class="flex flex-col gap-1 text-sm"><!--[0--><button type="button" aria-live="polite" aria-disabled="false" class="group/option flex items-center gap-2 overflow-hidden rounded-sm px-3 py-1.5 text-left font-medium tracking-normal text-foreground-muted transition-colors duration-150 ease-out hover:bg-background-muted hover:text-foreground"><span class="grid" style="grid-template-areas: 'content';"><!----><span class="flex items-center gap-2" style="grid-area: content;"><!--[-1--><svg role="img" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-4 flex-none"><title>Markdown</title><path class="stroke-current" d="M1.212 5.5h21.576c.407 0 .712.317.712.679v11.549a.695.695 0 0 1-.712.677H1.212a.695.695 0 0 1-.712-.678V6.18c0-.362.305-.679.712-.679Z"></path><path class="fill-current" d="M3.03 15.96V7.946h2.425l2.424 2.946 2.424-2.946h2.424v8.014h-2.424v-4.596L7.88 14.31l-2.424-2.946v4.596H3.03Zm15.152 0-3.636-3.89h2.424V7.947h2.424v4.125h2.424l-3.636 3.889Z"></path></svg><!--]--> <span>Copy as Markdown</span></span><!----></span></button><!--]--> <!--[0--><a class="group/option flex items-center gap-2 rounded-sm px-3 py-1.5 text-left font-medium tracking-normal text-foreground-muted transition-colors duration-150 ease-out hover:bg-background-muted hover:text-foreground" href="https://github.com/julien-blanchon/saddle-animation-vertex-animation-texture/blob/main/docs//saddle-animation-vertex-animation-texture/docs/architecture.md" target="_blank" rel="noreferrer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" preserveAspectRatio="xMidYMid meet" width="16" height="16" aria-hidden="true" class="size-4 flex-none"><!--[-1--><!--]--><path fill-rule="evenodd" d="M16,2a14,14,0,0,0-4.43,27.28c.7.13,1-.3,1-.67s0-1.21,0-2.38c-3.89.84-4.71-1.88-4.71-1.88A3.71,3.71,0,0,0,6.24,22.3c-1.27-.86.1-.85.1-.85A2.94,2.94,0,0,1,8.48,22.9a3,3,0,0,0,4.08,1.16,2.93,2.93,0,0,1,.88-1.87c-3.1-.36-6.37-1.56-6.37-6.92a5.4,5.4,0,0,1,1.44-3.76,5,5,0,0,1,.14-3.7s1.17-.38,3.85,1.43a13.3,13.3,0,0,1,7,0c2.67-1.81,3.84-1.43,3.84-1.43a5,5,0,0,1,.14,3.7,5.4,5.4,0,0,1,1.44,3.76c0,5.38-3.27,6.56-6.39,6.91a3.33,3.33,0,0,1,.95,2.59c0,1.87,0,3.38,0,3.84s.25.81,1,.67A14,14,0,0,0,16,2Z"></path></svg><!----> <span>Open in GitHub</span> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" preserveAspectRatio="xMidYMid meet" width="16" height="16" aria-hidden="true" class="ml-auto size-4 flex-none"><!--[-1--><!--]--><path d="M26,28H6a2.0027,2.0027,0,0,1-2-2V6A2.0027,2.0027,0,0,1,6,4H16V6H6V26H26V16h2V26A2.0027,2.0027,0,0,1,26,28Z"></path><path d="M20 2 20 4 26.586 4 18 12.586 19.414 14 28 5.414 28 12 30 12 30 2 20 2z"></path></svg><!----> <span class="sr-only">(opens in a new tab)</span></a><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--></div></div><!--]--><!--]--></div></aside></div></main><!--]--><!--]--><!----> <!--[0--><!--[-1--><!--]--><!--]--><!--]--><!--]--> <!--[-1--><!--]--><!--]-->
+			
+			<script>
+				{
+					__sveltekit_98dslb = {
+						base: new URL("../..", location).pathname.slice(0, -1),
+						assets: "/saddle-animation-vertex-animation-texture"
+					};
+
+					const element = document.currentScript.parentElement;
+
+					Promise.all([
+						import("../../_app/immutable/entry/start.BQAQ9ZE8.js"),
+						import("../../_app/immutable/entry/app.laZJv4X_.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element, {
+							node_ids: [0, 2, 5],
+							data: [null,null,{type:"data",data:{html:"\u003Ch2>Overview\u003C/h2>\n\u003Cp>\u003Ccode>saddle-animation-vertex-animation-texture\u003C/code> splits VAT playback into four layers:\u003C/p>\n\u003Col>\n\u003Cli>Metadata\u003Cul>\n\u003Cli>\u003Ccode>VatAnimationData\u003C/code> is the canonical runtime description of a bake.\u003C/li>\n\u003Cli>JSON loaders normalize source metadata into this one internal shape.\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>ECS playback\u003Cul>\n\u003Cli>\u003Ccode>VatPlayback\u003C/code> and \u003Ccode>VatCrossfade\u003C/code> are the consumer-facing state.\u003C/li>\n\u003Cli>Systems advance time, resolve loop policy, emit events, and prepare GPU frame selections.\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>Material state\u003Cul>\n\u003Cli>\u003Ccode>VatMaterialExt\u003C/code> owns the data textures, decode uniforms, and a storage buffer handle.\u003C/li>\n\u003Cli>\u003Ccode>MeshTag\u003C/code> is used as the per-entity index into the storage buffer.\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>Shader deformation\u003Cul>\n\u003Cli>The vertex shader samples frame A and frame B, interpolates, optionally crossfades a secondary clip, and feeds the result into Bevy PBR.\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003C/ol>\n\u003Ch2>Runtime Data Flow\u003C/h2>\n\u003Col>\n\u003Cli>Load or construct \u003Ccode>VatAnimationData\u003C/code>.\u003C/li>\n\u003Cli>Build a \u003Ccode>VatMaterial\u003C/code> with \u003Ccode>build_vat_material(...)\u003C/code>.\u003C/li>\n\u003Cli>Spawn a mesh with:\u003Cul>\n\u003Cli>\u003Ccode>Mesh3d\u003C/code>\u003C/li>\n\u003Cli>\u003Ccode>MeshMaterial3d&lt;VatMaterial&gt;\u003C/code>\u003C/li>\n\u003Cli>\u003Ccode>VatAnimationSource\u003C/code>\u003C/li>\n\u003Cli>\u003Ccode>VatPlayback\u003C/code>\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>VatSystems::AdvancePlayback\u003C/code>\u003Cul>\n\u003Cli>advances clip-local time\u003C/li>\n\u003Cli>applies loop policy\u003C/li>\n\u003Cli>advances crossfade source state\u003C/li>\n\u003Cli>records pending events / finish notifications\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>VatSystems::SyncFollowers\u003C/code>\u003Cul>\n\u003Cli>copies authoritative playback state from leader meshes into follower meshes\u003C/li>\n\u003Cli>applies optional time offsets after loop-mode normalization\u003C/li>\n\u003Cli>mirrors active crossfade requests for modular multi-mesh actors\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>VatSystems::ResolveTransitions\u003C/code>\u003Cul>\n\u003Cli>progresses and clears completed crossfades\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>VatSystems::EmitMessages\u003C/code>\u003Cul>\n\u003Cli>emits \u003Ccode>VatClipFinished\u003C/code>\u003C/li>\n\u003Cli>emits \u003Ccode>VatEventReached\u003C/code>\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>VatSystems::SyncGpuState\u003C/code>\u003Cul>\n\u003Cli>validates mesh / metadata compatibility\u003C/li>\n\u003Cli>applies metadata-driven bounds and frustum-culling policy\u003C/li>\n\u003Cli>groups entities by material handle\u003C/li>\n\u003Cli>writes one storage-buffer entry per entity\u003C/li>\n\u003Cli>assigns \u003Ccode>MeshTag\u003C/code> so the shader can index the right entry\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003C/ol>\n\u003Ch2>Modular Multi-Mesh Playback\u003C/h2>\n\u003Cp>\u003Ccode>VatPlaybackFollower\u003C/code> provides a light ECS-level sync layer for modular actors made from several\nmeshes that all share the same VAT metadata layout.\u003C/p>\n\u003Cul>\n\u003Cli>The leader owns the real \u003Ccode>VatPlayback\u003C/code>\u003C/li>\n\u003Cli>Followers skip independent time advancement\u003C/li>\n\u003Cli>The follower sync pass copies clip index, play/pause state, optional loop mode, and optional\ncrossfade state\u003C/li>\n\u003Cli>Per-follower \u003Ccode>time_offset_seconds\u003C/code> is applied after loop normalization so crowds and layered props\ncan intentionally stagger motion without drifting out of phase\u003C/li>\n\u003C/ul>\n\u003Ch2>Material / Shader Path\u003C/h2>\n\u003Cp>The primary render path is:\u003C/p>\n\u003Cp>\u003Ccode>ExtendedMaterial&lt;StandardMaterial, VatMaterialExt&gt;\u003C/code>\u003C/p>\n\u003Cp>Bindings:\u003C/p>\n\u003Cul>\n\u003Cli>\u003Ccode>100\u003C/code>: position texture\u003C/li>\n\u003Cli>\u003Ccode>101\u003C/code>: position sampler\u003C/li>\n\u003Cli>\u003Ccode>102\u003C/code>: normal texture\u003C/li>\n\u003Cli>\u003Ccode>103\u003C/code>: normal sampler\u003C/li>\n\u003Cli>\u003Ccode>104\u003C/code>: decode/layout uniform\u003C/li>\n\u003Cli>\u003Ccode>105\u003C/code>: per-entity storage buffer\u003C/li>\n\u003C/ul>\n\u003Cp>The shader uses mesh UV1 as the baked vertex lookup channel. UV1 is interpreted as a texel-center lookup into the first frame layout. The shader then offsets the row by \u003Ccode>frame_index * rows_per_frame\u003C/code>.\u003C/p>\n\u003Ch2>Bounds and Culling\u003C/h2>\n\u003Cp>Static proxy bounds are usually wrong for VAT motion extremes. The crate addresses this in two ways:\u003C/p>\n\u003Cul>\n\u003Cli>\u003Ccode>VatBoundsMode::UseMetadataAabb\u003C/code>\u003Cul>\n\u003Cli>Inserts an \u003Ccode>Aabb\u003C/code> derived from \u003Ccode>VatAnimationData::animation_bounds_*\u003C/code>\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>VatBoundsMode::DisableFrustumCulling\u003C/code>\u003Cul>\n\u003Cli>Adds \u003Ccode>NoFrustumCulling\u003C/code>\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003C/ul>\n\u003Cp>World-space playback also disables built-in frustum culling because proxy-local bounds are not reliable there.\u003C/p>\n\u003Ch2>Current Scope\u003C/h2>\n\u003Cp>Shipped now:\u003C/p>\n\u003Cul>\n\u003Cli>fixed-topology soft-body VAT\u003C/li>\n\u003Cli>local-space or world-space metadata flags\u003C/li>\n\u003Cli>separate or packed normal textures\u003C/li>\n\u003Cli>multi-clip playback\u003C/li>\n\u003Cli>shared-material storage-buffer uploads\u003C/li>\n\u003C/ul>\n\u003Cp>Deferred:\u003C/p>\n\u003Cul>\n\u003Cli>rigid-body VAT rotation / pivot textures\u003C/li>\n\u003Cli>auxiliary shading channels in the shader path\u003C/li>\n\u003Cli>advanced GPU-side instancing extraction beyond the material storage-buffer path\u003C/li>\n\u003C/ul>\n",title:"Architecture",description:"Architecture documentation",rawMarkdown:"## Overview\n\n`saddle-animation-vertex-animation-texture` splits VAT playback into four layers:\n\n1. Metadata\n   - `VatAnimationData` is the canonical runtime description of a bake.\n   - JSON loaders normalize source metadata into this one internal shape.\n2. ECS playback\n   - `VatPlayback` and `VatCrossfade` are the consumer-facing state.\n   - Systems advance time, resolve loop policy, emit events, and prepare GPU frame selections.\n3. Material state\n   - `VatMaterialExt` owns the data textures, decode uniforms, and a storage buffer handle.\n   - `MeshTag` is used as the per-entity index into the storage buffer.\n4. Shader deformation\n   - The vertex shader samples frame A and frame B, interpolates, optionally crossfades a secondary clip, and feeds the result into Bevy PBR.\n\n## Runtime Data Flow\n\n1. Load or construct `VatAnimationData`.\n2. Build a `VatMaterial` with `build_vat_material(...)`.\n3. Spawn a mesh with:\n   - `Mesh3d`\n   - `MeshMaterial3d\u003CVatMaterial>`\n   - `VatAnimationSource`\n   - `VatPlayback`\n4. `VatSystems::AdvancePlayback`\n   - advances clip-local time\n   - applies loop policy\n   - advances crossfade source state\n   - records pending events / finish notifications\n5. `VatSystems::SyncFollowers`\n   - copies authoritative playback state from leader meshes into follower meshes\n   - applies optional time offsets after loop-mode normalization\n   - mirrors active crossfade requests for modular multi-mesh actors\n6. `VatSystems::ResolveTransitions`\n   - progresses and clears completed crossfades\n7. `VatSystems::EmitMessages`\n   - emits `VatClipFinished`\n   - emits `VatEventReached`\n8. `VatSystems::SyncGpuState`\n   - validates mesh / metadata compatibility\n   - applies metadata-driven bounds and frustum-culling policy\n   - groups entities by material handle\n   - writes one storage-buffer entry per entity\n   - assigns `MeshTag` so the shader can index the right entry\n\n## Modular Multi-Mesh Playback\n\n`VatPlaybackFollower` provides a light ECS-level sync layer for modular actors made from several\nmeshes that all share the same VAT metadata layout.\n\n- The leader owns the real `VatPlayback`\n- Followers skip independent time advancement\n- The follower sync pass copies clip index, play/pause state, optional loop mode, and optional\n  crossfade state\n- Per-follower `time_offset_seconds` is applied after loop normalization so crowds and layered props\n  can intentionally stagger motion without drifting out of phase\n\n## Material / Shader Path\n\nThe primary render path is:\n\n`ExtendedMaterial\u003CStandardMaterial, VatMaterialExt>`\n\nBindings:\n\n- `100`: position texture\n- `101`: position sampler\n- `102`: normal texture\n- `103`: normal sampler\n- `104`: decode/layout uniform\n- `105`: per-entity storage buffer\n\nThe shader uses mesh UV1 as the baked vertex lookup channel. UV1 is interpreted as a texel-center lookup into the first frame layout. The shader then offsets the row by `frame_index * rows_per_frame`.\n\n## Bounds and Culling\n\nStatic proxy bounds are usually wrong for VAT motion extremes. The crate addresses this in two ways:\n\n- `VatBoundsMode::UseMetadataAabb`\n  - Inserts an `Aabb` derived from `VatAnimationData::animation_bounds_*`\n- `VatBoundsMode::DisableFrustumCulling`\n  - Adds `NoFrustumCulling`\n\nWorld-space playback also disables built-in frustum culling because proxy-local bounds are not reliable there.\n\n## Current Scope\n\nShipped now:\n\n- fixed-topology soft-body VAT\n- local-space or world-space metadata flags\n- separate or packed normal textures\n- multi-clip playback\n- shared-material storage-buffer uploads\n\nDeferred:\n\n- rigid-body VAT rotation / pivot textures\n- auxiliary shading channels in the shader path\n- advanced GPU-side instancing extraction beyond the material storage-buffer path\n",slug:"architecture"},uses:{params:["slug"]}}],
+							form: null,
+							error: null
+						});
+					});
+				}
+			</script>
+		</div>
+	</body>
+</html>

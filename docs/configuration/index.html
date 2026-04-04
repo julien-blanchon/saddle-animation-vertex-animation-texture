@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<script>
+			(() => {
+				document.documentElement.classList.add('js');
+				const storageKey = 'docs-theme';
+				const storedTheme = localStorage.getItem(storageKey);
+				const isDark =
+					storedTheme === 'dark' ||
+					(storedTheme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+				document.documentElement.classList.toggle('dark', isDark);
+				document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+			})();
+		</script>
+		<link href="../../_app/immutable/entry/start.BQAQ9ZE8.js" rel="modulepreload">
+		<link href="../../_app/immutable/chunks/C9-aUA_O.js" rel="modulepreload">
+		<link href="../../_app/immutable/chunks/D6rU7RKI.js" rel="modulepreload">
+		<link href="../../_app/immutable/entry/app.laZJv4X_.js" rel="modulepreload">
+		<link href="../../_app/immutable/chunks/D2PL5qU_.js" rel="modulepreload">
+		<link href="../../_app/immutable/chunks/DsnmJJEf.js" rel="modulepreload">
+		<link href="../../_app/immutable/chunks/CGbRUU1n.js" rel="modulepreload">
+		<link href="../../_app/immutable/nodes/0.B5AzXQWS.js" rel="modulepreload">
+		<link href="../../_app/immutable/chunks/BbR_TR3S.js" rel="modulepreload">
+		<link href="../../_app/immutable/chunks/Be7EYB7h.js" rel="modulepreload">
+		<link href="../../_app/immutable/chunks/D3udy8KQ.js" rel="modulepreload">
+		<link href="../../_app/immutable/nodes/2.DqoZ3G3Y.js" rel="modulepreload">
+		<link href="../../_app/immutable/chunks/DGZ-VjKz.js" rel="modulepreload">
+		<link href="../../_app/immutable/nodes/5.BOp3_yHr.js" rel="modulepreload">
+		<link href="../../_app/immutable/chunks/O7QY0ZL7.js" rel="modulepreload">
+		<!--12qhfyh--><meta name="theme-color" content="#ffffff"/> <link rel="icon" type="image/svg+xml" href="../../favicon.svg"/> <meta name="description" content="GPU vertex animation texture playback for Bevy PBR"/><!----><!--1bpnej--><!--[0--><meta name="description" content="Configuration documentation"/><!--]--><!----><title>Configuration - saddle-animation-vertex-animation-texture</title>
+		<link href="../../_app/immutable/assets/manifest.DAGDUwuc.css" rel="stylesheet">
+		<link href="../../_app/immutable/assets/0.Cu___w4E.css" rel="stylesheet">
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents"><!--[--><!--[0--><!--[--><!--[0--><!--[--><main class="relative h-dvh bg-background text-foreground"><div class="fixed inset-x-0 top-0 z-50 flex items-center justify-between border-b border-border bg-background px-4 py-1.5 lg:hidden"><a href="../../" class="inline-flex items-center gap-1 px-2 py-2 text-sm tracking-tight text-foreground"><span class="font-medium tracking-tight text-foreground">saddle-animation-vertex-animation-texture</span></a> <button class="-mr-2 inline-flex size-10 items-center justify-center gap-2 rounded-sm text-sm whitespace-nowrap text-foreground transition-colors duration-150 ease-out hover:bg-background-muted lg:hidden" aria-label="Toggle menu"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" preserveAspectRatio="xMidYMid meet" width="20" height="20" aria-hidden="true"><!--[-1--><!--]--><path d="M4 6H28V8H4z"></path><path d="M4 24H28V26H4z"></path><path d="M4 12H28V14H4z"></path><path d="M4 18H28V20H4z"></path></svg><!----></button></div> <!--[-1--><!--]--><!----> <div class="flex h-full w-full min-w-0 lg:grid lg:grid-cols-[22rem_minmax(0,1fr)] lg:pr-4 xl:grid-cols-[22rem_minmax(0,56rem)_18rem] xl:justify-center"><div class="hidden lg:block"><aside class="flex h-dvh flex-col bg-background" aria-label="Documentation sidebar"><div class="flex flex-col gap-4 p-4"><a href="../../" class="flex items-center gap-2"><span class="text-xl font-medium tracking-tight text-foreground">saddle-animation-vertex-animation-texture</span></a> <!--[0--><button type="button" class="group inset-shadow relative flex h-9 w-full items-center gap-2 rounded-sm bg-background-inset px-3 py-1.5 text-sm font-medium text-foreground-muted/70 transition-[color] duration-150 ease-out hover:text-foreground-muted"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" preserveAspectRatio="xMidYMid meet" width="16" height="16" aria-hidden="true" class="text-foreground-muted/70"><!--[-1--><!--]--><path d="M29,27.5859l-7.5521-7.5521a11.0177,11.0177,0,1,0-1.4141,1.4141L27.5859,29ZM4,13a9,9,0,1,1,9,9A9.01,9.01,0,0,1,4,13Z"></path></svg><!----> <span class="flex-1 text-left">Search...</span> <!--[0--><kbd class="card pointer-events-none relative hidden h-5 items-center gap-1 rounded-xs bg-background px-1.5 font-mono text-[10px] font-medium text-foreground-muted/70 select-none sm:flex">⌘ K</kbd><!--]--></button><!--]--><!----></div> <div class="relative flex flex-col overflow-hidden flex-1 svelte-1lcbi17"><div class="scrollbar-hide min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto p-4 svelte-1lcbi17" style="mask-image: linear-gradient(to bottom, transparent, black 16px, black calc(100% - 16px), transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 16px, black calc(100% - 16px), transparent);"><nav class="flex flex-col space-y-1" aria-label="Documentation pages"><h4 class="mb-2 ml-2 text-xs font-medium tracking-wide text-foreground-muted/70 uppercase">Docs</h4> <!--[--><!--[-1--><a href="../../" class="block rounded-sm px-3 py-1.5 text-sm tracking-normal transition-all duration-150 ease-out text-foreground-muted hover:bg-background-muted hover:text-foreground">Overview</a><!--]--><!--[0--><button class="flex w-full items-center justify-between rounded-sm px-3 py-1.5 text-sm font-medium tracking-normal transition-all duration-150 ease-out hover:bg-background-muted hover:text-foreground text-foreground-muted"><span>Documentation</span> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" preserveAspectRatio="xMidYMid meet" width="16" height="16" aria-hidden="true" class="size-4 transition-transform duration-150"><!--[-1--><!--]--><path d="M22 16 12 26 10.6 24.6 19.2 16 10.6 7.4 12 6z"></path></svg><!----></button> <!--[-1--><!--]--><!--]--><!--[0--><button class="flex w-full items-center justify-between rounded-sm px-3 py-1.5 text-sm font-medium tracking-normal transition-all duration-150 ease-out hover:bg-background-muted hover:text-foreground text-foreground-muted"><span>Demos</span> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" preserveAspectRatio="xMidYMid meet" width="16" height="16" aria-hidden="true" class="size-4 transition-transform duration-150"><!--[-1--><!--]--><path d="M22 16 12 26 10.6 24.6 19.2 16 10.6 7.4 12 6z"></path></svg><!----></button> <!--[-1--><!--]--><!--]--><!--]--></nav><!----></div></div><!----> <div class="flex items-center gap-1 p-4"><!--[0--><button type="button" class="group transition-scale inset-shadow relative inline-flex size-7 items-center justify-center rounded-sm bg-background-inset text-foreground duration-150 ease-out active:scale-[0.95]" aria-label="Switch to dark mode"><span class="sr-only">Switch to dark mode</span> <span class="transition-transform duration-150 ease-out"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" preserveAspectRatio="xMidYMid meet" width="16" height="16" aria-hidden="true"><!--[-1--><!--]--><path d="M16,12a4,4,0,1,1-4,4,4.0045,4.0045,0,0,1,4-4m0-2a6,6,0,1,0,6,6,6,6,0,0,0-6-6Z" transform="translate(0 .005)"></path><path d="M6.854 5.375H8.854V10.333H6.854z" transform="rotate(-45 7.86 7.856)"></path><path d="M2 15.005H7V17.005000000000003H2z"></path><path d="M5.375 23.147H10.333V25.147H5.375z" transform="rotate(-45 7.86 24.149)"></path><path d="M15 25.005H17V30.005H15z"></path><path d="M23.147 21.668H25.147V26.625999999999998H23.147z" transform="rotate(-45 24.152 24.149)"></path><path d="M25 15.005H30V17.005000000000003H25z"></path><path d="M21.668 6.854H26.625999999999998V8.854H21.668z" transform="rotate(-45 24.152 7.856)"></path><path d="M15 2.005H17V7.005H15z"></path></svg><!----></span> <span class="absolute transition-transform duration-150 ease-out scale-0 blur-[2px]"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" preserveAspectRatio="xMidYMid meet" width="16" height="16" aria-hidden="true"><!--[-1--><!--]--><path d="M13.5025,5.4136A15.0755,15.0755,0,0,0,25.096,23.6082a11.1134,11.1134,0,0,1-7.9749,3.3893c-.1385,0-.2782.0051-.4178,0A11.0944,11.0944,0,0,1,13.5025,5.4136M14.98,3a1.0024,1.0024,0,0,0-.1746.0156A13.0959,13.0959,0,0,0,16.63,28.9973c.1641.006.3282,0,.4909,0a13.0724,13.0724,0,0,0,10.702-5.5556,1.0094,1.0094,0,0,0-.7833-1.5644A13.08,13.08,0,0,1,15.8892,4.38,1.0149,1.0149,0,0,0,14.98,3Z"></path></svg><!----></span></button><!--]--> <!--[0--><a class="group transition-scale inset-shadow relative inline-flex size-7 cursor-pointer items-center justify-center rounded-sm bg-background-inset text-foreground duration-150 ease-out active:scale-[0.95]" href="https://github.com/julien-blanchon/saddle-animation-vertex-animation-texture" target="_blank" rel="noreferrer" aria-label="Open project repository (opens in a new tab)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" preserveAspectRatio="xMidYMid meet" width="16" height="16" aria-hidden="true" class="size-4 flex-none"><!--[-1--><!--]--><path fill-rule="evenodd" d="M16,2a14,14,0,0,0-4.43,27.28c.7.13,1-.3,1-.67s0-1.21,0-2.38c-3.89.84-4.71-1.88-4.71-1.88A3.71,3.71,0,0,0,6.24,22.3c-1.27-.86.1-.85.1-.85A2.94,2.94,0,0,1,8.48,22.9a3,3,0,0,0,4.08,1.16,2.93,2.93,0,0,1,.88-1.87c-3.1-.36-6.37-1.56-6.37-6.92a5.4,5.4,0,0,1,1.44-3.76,5,5,0,0,1,.14-3.7s1.17-.38,3.85,1.43a13.3,13.3,0,0,1,7,0c2.67-1.81,3.84-1.43,3.84-1.43a5,5,0,0,1,.14,3.7,5.4,5.4,0,0,1,1.44,3.76c0,5.38-3.27,6.56-6.39,6.91a3.33,3.33,0,0,1,.95,2.59c0,1.87,0,3.38,0,3.84s.25.81,1,.67A14,14,0,0,0,16,2Z"></path></svg><!----></a><!--]--></div></aside><!----></div> <div class="inset-shadow relative mx-auto h-full w-full max-w-4xl min-w-0 overflow-hidden border border-border bg-background-inset pt-12 lg:my-4 lg:max-h-[calc(100dvh-2rem)] lg:overflow-visible lg:rounded-xl lg:pt-0"><div class="relative flex flex-col overflow-hidden mx-auto h-full w-full lg:max-h-[calc(100dvh-2rem)] svelte-1lcbi17"><div id="docs-content-container" class="scrollbar-hide min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto rounded-lg overscroll-none flex flex-col gap-8 px-4 py-8 lg:px-8 svelte-1lcbi17" style="mask-image: linear-gradient(to bottom, transparent, black 16px, black calc(100% - 16px), transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 16px, black calc(100% - 16px), transparent);"><section class="min-w-0 flex-1 space-y-8"><div class="space-y-4"><!--[-1--><!--]--> <h1 class="scroll-m-20 text-3xl font-medium tracking-tight text-foreground">Configuration</h1> <!--[0--><p class="max-w-4xl text-base font-normal tracking-normal text-foreground-muted">Configuration documentation</p><!--]--> <!--[0--><!--[0--><div class="relative z-20 mt-8 flex w-full gap-2 lg:hidden"><!--[0--><div class="inset-shadow w-full rounded-md bg-background-inset p-1.5"><button type="button" aria-live="polite" aria-disabled="false" class="card relative inline-flex h-9 w-full font-medium shrink-0 overflow-hidden items-center justify-center gap-2 rounded-sm bg-background px-4 py-2 text-sm whitespace-nowrap text-foreground transition-[background-color] duration-150 ease-out hover:bg-background-muted disabled:pointer-events-none disabled:opacity-50 has-[>svg]:px-3 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*=size-])]:size-4 flex-1"><span class="grid place-items-center" style="grid-template-areas: 'content';"><!----><span class="flex items-center gap-2 font-medium tracking-normal text-foreground will-change-transform" style="grid-area: content;"><!--[-1--><svg role="img" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-4 flex-none"><title>Markdown</title><path class="stroke-current" d="M1.212 5.5h21.576c.407 0 .712.317.712.679v11.549a.695.695 0 0 1-.712.677H1.212a.695.695 0 0 1-.712-.678V6.18c0-.362.305-.679.712-.679Z"></path><path class="fill-current" d="M3.03 15.96V7.946h2.425l2.424 2.946 2.424-2.946h2.424v8.014h-2.424v-4.596L7.88 14.31l-2.424-2.946v4.596H3.03Zm15.152 0-3.636-3.89h2.424V7.947h2.424v4.125h2.424l-3.636 3.889Z"></path></svg><!--]--> <span>Copy Markdown</span></span><!----></span></button></div><!--]--> <!--[0--><div class="inset-shadow relative rounded-md bg-background-inset p-1.5"><button id="mobile-doc-actions-menu-trigger" type="button" class="card relative inline-flex h-9 w-full font-medium shrink-0 overflow-hidden items-center justify-center gap-2 rounded-sm bg-background px-4 py-2 text-sm whitespace-nowrap text-foreground transition-[background-color] duration-150 ease-out hover:bg-background-muted disabled:pointer-events-none disabled:opacity-50 has-[>svg]:px-3 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*=size-])]:size-4 flex-1 w-auto! px-2.5!" aria-label="More actions" aria-haspopup="menu" aria-controls="mobile-doc-actions-menu" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" preserveAspectRatio="xMidYMid meet" width="16" height="16" aria-hidden="true" class="size-4"><!--[-1--><!--]--><circle cx="8" cy="16" r="2"></circle><circle cx="16" cy="16" r="2"></circle><circle cx="24" cy="16" r="2"></circle></svg><!----></button> <!--[-1--><!--]--></div><!--]--></div><!--]--><!--]--></div> <hr class="text-border"/> <div><!--[--><article data-doc-content="" class="w-full max-w-4xl"><!----><h2>Plugin</h2>
+<p><code>VertexAnimationTexturePlugin</code></p>
+<p>Fields:</p>
+<ul>
+<li><code>activate_schedule</code><ul>
+<li>Type: <code>Interned&lt;dyn ScheduleLabel&gt;</code></li>
+<li>Effect: turns the runtime on</li>
+</ul>
+</li>
+<li><code>deactivate_schedule</code><ul>
+<li>Type: <code>Interned&lt;dyn ScheduleLabel&gt;</code></li>
+<li>Effect: turns the runtime off</li>
+</ul>
+</li>
+<li><code>update_schedule</code><ul>
+<li>Type: <code>Interned&lt;dyn ScheduleLabel&gt;</code></li>
+<li>Effect: hosts all <code>VatSystems</code></li>
+</ul>
+</li>
+</ul>
+<p>Convenience:</p>
+<ul>
+<li><code>VertexAnimationTexturePlugin::default()</code></li>
+<li><code>VertexAnimationTexturePlugin::always_on(Update)</code></li>
+</ul>
+<h2>Playback Components</h2>
+<h3><code>VatAnimationSource</code></h3>
+<ul>
+<li><code>animation</code><ul>
+<li><code>Handle&lt;VatAnimationData&gt;</code></li>
+<li>Required metadata asset</li>
+</ul>
+</li>
+<li><code>bounds_mode</code><ul>
+<li><code>VatBoundsMode</code></li>
+<li>Default: <code>UseMetadataAabb</code></li>
+</ul>
+</li>
+</ul>
+<h3><code>VatPlayback</code></h3>
+<ul>
+<li><code>time_seconds</code><ul>
+<li>Clip-local playback time</li>
+<li>Default: <code>0.0</code></li>
+</ul>
+</li>
+<li><code>speed</code><ul>
+<li>Playback multiplier</li>
+<li>Default: <code>1.0</code></li>
+</ul>
+</li>
+<li><code>active_clip</code><ul>
+<li>Clip index into <code>VatAnimationData::clips</code></li>
+<li>Default: <code>0</code></li>
+</ul>
+</li>
+<li><code>loop_mode</code><ul>
+<li><code>VatLoopMode</code></li>
+<li>Default: <code>Loop</code></li>
+<li>Note: if left at <code>Loop</code>, clip metadata may provide a default override</li>
+</ul>
+</li>
+<li><code>playing</code><ul>
+<li>Whether time advances</li>
+<li>Default: <code>true</code></li>
+</ul>
+</li>
+</ul>
+<h3><code>VatCrossfade</code></h3>
+<ul>
+<li><code>from_clip</code><ul>
+<li>Source clip index</li>
+</ul>
+</li>
+<li><code>to_clip</code><ul>
+<li>Destination clip index</li>
+</ul>
+</li>
+<li><code>elapsed</code><ul>
+<li>Crossfade progress in seconds</li>
+</ul>
+</li>
+<li><code>duration</code><ul>
+<li>Crossfade length in seconds</li>
+<li>Clamped to at least <code>0.0001</code></li>
+</ul>
+</li>
+</ul>
+<p>Usage:</p>
+<ul>
+<li>Insert <code>VatCrossfade</code> while leaving <code>VatPlayback.active_clip</code> on the currently playing source clip.</li>
+<li>The runtime captures the source clip/time internally and flips playback to <code>to_clip</code>.</li>
+<li>Do not reset <code>VatPlayback.time_seconds</code> manually when requesting the crossfade.</li>
+</ul>
+<h3><code>VatPlaybackTweaks</code></h3>
+<ul>
+<li><code>disable_interpolation</code><ul>
+<li><code>false</code> by default</li>
+<li>When <code>true</code>, the runtime snaps to frame A instead of blending to frame B</li>
+</ul>
+</li>
+</ul>
+<h3><code>VatPlaybackFollower</code></h3>
+<ul>
+<li><code>leader</code><ul>
+<li><code>Entity</code></li>
+<li>Required playback source entity to mirror</li>
+</ul>
+</li>
+<li><code>time_offset_seconds</code><ul>
+<li><code>0.0</code> by default</li>
+<li>Applies a signed clip-local offset after copying the leader state</li>
+</ul>
+</li>
+<li><code>mirror_loop_mode</code><ul>
+<li><code>true</code> by default</li>
+<li>When <code>true</code>, the follower copies the leader loop mode before time normalization</li>
+</ul>
+</li>
+<li><code>mirror_crossfade</code><ul>
+<li><code>true</code> by default</li>
+<li>When <code>true</code>, <code>VatCrossfade</code> and its runtime source state are mirrored as well</li>
+</ul>
+</li>
+</ul>
+<p>Usage:</p>
+<ul>
+<li>Add <code>VatPlaybackFollower</code> to secondary meshes that should stay phase-locked to a leader mesh.</li>
+<li>Followers do not advance their own time independently while the component is present.</li>
+<li>Offsets are normalized through the resolved loop mode, so looping and ping-pong clips stay stable.</li>
+</ul>
+<h2>Enums</h2>
+<h3><code>VatLoopMode</code></h3>
+<ul>
+<li><code>Loop</code><ul>
+<li>Wraps at the end of the clip</li>
+</ul>
+</li>
+<li><code>Once</code><ul>
+<li>Clamps at the clip boundary and pauses playback</li>
+</ul>
+</li>
+<li><code>PingPong</code><ul>
+<li>Reflects at both clip boundaries</li>
+</ul>
+</li>
+<li><code>ClampForever</code><ul>
+<li>Clamps at the boundary without toggling <code>playing</code></li>
+</ul>
+</li>
+</ul>
+<h3><code>VatBoundsMode</code></h3>
+<ul>
+<li><code>UseMetadataAabb</code><ul>
+<li>Inserts metadata-driven <code>Aabb</code></li>
+</ul>
+</li>
+<li><code>KeepProxyAabb</code><ul>
+<li>Leaves the proxy mesh bounds untouched</li>
+</ul>
+</li>
+<li><code>DisableFrustumCulling</code><ul>
+<li>Adds <code>NoFrustumCulling</code></li>
+</ul>
+</li>
+</ul>
+<h2>Material Builder</h2>
+<p><code>build_vat_material(...)</code></p>
+<p>Inputs:</p>
+<ul>
+<li>base <code>StandardMaterial</code></li>
+<li><code>VatAnimationData</code></li>
+<li>position texture handle</li>
+<li>optional normal texture handle</li>
+<li><code>VatMaterialDefaults</code></li>
+<li>mutable <code>Assets&lt;ShaderStorageBuffer&gt;</code></li>
+</ul>
+<p>Failure cases:</p>
+<ul>
+<li>metadata declares a separate normal texture but no normal handle is supplied</li>
+</ul>
+<h2>Validation Helpers</h2>
+<ul>
+<li><code>validate_animation_data</code><ul>
+<li>metadata-only validation</li>
+<li>rejects undersized position-texture layouts, unsupported loop modes, unknown precision strings, and malformed normal descriptors</li>
+</ul>
+</li>
+<li><code>validate_mesh_for_animation</code><ul>
+<li>proxy mesh validation against metadata</li>
+</ul>
+</li>
+<li><code>metadata_aabb</code><ul>
+<li>converts metadata animation bounds into Bevy <code>Aabb</code></li>
+</ul>
+</li>
+<li><code>should_disable_frustum_culling</code><ul>
+<li>central policy helper for culling fallback</li>
+</ul>
+</li>
+</ul>
+<!----></article> <!----><!--]--><!----> <!--[-1--><!--]--><!----></div></section><!----></div></div><!----></div> <aside class="hidden xl:block xl:w-full xl:py-8 xl:pr-4 xl:pl-4" aria-label="Table of contents and document actions"><div class="sticky top-8 flex h-full max-h-[calc(100dvh-4rem)] min-h-0 flex-col"><!--[0--><div class="min-h-0 flex-1"><div class="contents"><!--[-1--><div class="hidden text-sm tracking-normal text-foreground-muted/70 lg:block">No headings</div><!--]--></div><!----></div><!--]--> <!--[0--><!--[0--><div class="mt-auto"><div class="flex flex-col gap-1 text-sm"><!--[0--><button type="button" aria-live="polite" aria-disabled="false" class="group/option flex items-center gap-2 overflow-hidden rounded-sm px-3 py-1.5 text-left font-medium tracking-normal text-foreground-muted transition-colors duration-150 ease-out hover:bg-background-muted hover:text-foreground"><span class="grid" style="grid-template-areas: 'content';"><!----><span class="flex items-center gap-2" style="grid-area: content;"><!--[-1--><svg role="img" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="size-4 flex-none"><title>Markdown</title><path class="stroke-current" d="M1.212 5.5h21.576c.407 0 .712.317.712.679v11.549a.695.695 0 0 1-.712.677H1.212a.695.695 0 0 1-.712-.678V6.18c0-.362.305-.679.712-.679Z"></path><path class="fill-current" d="M3.03 15.96V7.946h2.425l2.424 2.946 2.424-2.946h2.424v8.014h-2.424v-4.596L7.88 14.31l-2.424-2.946v4.596H3.03Zm15.152 0-3.636-3.89h2.424V7.947h2.424v4.125h2.424l-3.636 3.889Z"></path></svg><!--]--> <span>Copy as Markdown</span></span><!----></span></button><!--]--> <!--[0--><a class="group/option flex items-center gap-2 rounded-sm px-3 py-1.5 text-left font-medium tracking-normal text-foreground-muted transition-colors duration-150 ease-out hover:bg-background-muted hover:text-foreground" href="https://github.com/julien-blanchon/saddle-animation-vertex-animation-texture/blob/main/docs//saddle-animation-vertex-animation-texture/docs/configuration.md" target="_blank" rel="noreferrer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" preserveAspectRatio="xMidYMid meet" width="16" height="16" aria-hidden="true" class="size-4 flex-none"><!--[-1--><!--]--><path fill-rule="evenodd" d="M16,2a14,14,0,0,0-4.43,27.28c.7.13,1-.3,1-.67s0-1.21,0-2.38c-3.89.84-4.71-1.88-4.71-1.88A3.71,3.71,0,0,0,6.24,22.3c-1.27-.86.1-.85.1-.85A2.94,2.94,0,0,1,8.48,22.9a3,3,0,0,0,4.08,1.16,2.93,2.93,0,0,1,.88-1.87c-3.1-.36-6.37-1.56-6.37-6.92a5.4,5.4,0,0,1,1.44-3.76,5,5,0,0,1,.14-3.7s1.17-.38,3.85,1.43a13.3,13.3,0,0,1,7,0c2.67-1.81,3.84-1.43,3.84-1.43a5,5,0,0,1,.14,3.7,5.4,5.4,0,0,1,1.44,3.76c0,5.38-3.27,6.56-6.39,6.91a3.33,3.33,0,0,1,.95,2.59c0,1.87,0,3.38,0,3.84s.25.81,1,.67A14,14,0,0,0,16,2Z"></path></svg><!----> <span>Open in GitHub</span> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" preserveAspectRatio="xMidYMid meet" width="16" height="16" aria-hidden="true" class="ml-auto size-4 flex-none"><!--[-1--><!--]--><path d="M26,28H6a2.0027,2.0027,0,0,1-2-2V6A2.0027,2.0027,0,0,1,6,4H16V6H6V26H26V16h2V26A2.0027,2.0027,0,0,1,26,28Z"></path><path d="M20 2 20 4 26.586 4 18 12.586 19.414 14 28 5.414 28 12 30 12 30 2 20 2z"></path></svg><!----> <span class="sr-only">(opens in a new tab)</span></a><!--]--> <!--[-1--><!--]--> <!--[-1--><!--]--></div></div><!--]--><!--]--></div></aside></div></main><!--]--><!--]--><!----> <!--[0--><!--[-1--><!--]--><!--]--><!--]--><!--]--> <!--[-1--><!--]--><!--]-->
+			
+			<script>
+				{
+					__sveltekit_98dslb = {
+						base: new URL("../..", location).pathname.slice(0, -1),
+						assets: "/saddle-animation-vertex-animation-texture"
+					};
+
+					const element = document.currentScript.parentElement;
+
+					Promise.all([
+						import("../../_app/immutable/entry/start.BQAQ9ZE8.js"),
+						import("../../_app/immutable/entry/app.laZJv4X_.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element, {
+							node_ids: [0, 2, 5],
+							data: [null,null,{type:"data",data:{html:"\u003Ch2>Plugin\u003C/h2>\n\u003Cp>\u003Ccode>VertexAnimationTexturePlugin\u003C/code>\u003C/p>\n\u003Cp>Fields:\u003C/p>\n\u003Cul>\n\u003Cli>\u003Ccode>activate_schedule\u003C/code>\u003Cul>\n\u003Cli>Type: \u003Ccode>Interned&lt;dyn ScheduleLabel&gt;\u003C/code>\u003C/li>\n\u003Cli>Effect: turns the runtime on\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>deactivate_schedule\u003C/code>\u003Cul>\n\u003Cli>Type: \u003Ccode>Interned&lt;dyn ScheduleLabel&gt;\u003C/code>\u003C/li>\n\u003Cli>Effect: turns the runtime off\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>update_schedule\u003C/code>\u003Cul>\n\u003Cli>Type: \u003Ccode>Interned&lt;dyn ScheduleLabel&gt;\u003C/code>\u003C/li>\n\u003Cli>Effect: hosts all \u003Ccode>VatSystems\u003C/code>\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003C/ul>\n\u003Cp>Convenience:\u003C/p>\n\u003Cul>\n\u003Cli>\u003Ccode>VertexAnimationTexturePlugin::default()\u003C/code>\u003C/li>\n\u003Cli>\u003Ccode>VertexAnimationTexturePlugin::always_on(Update)\u003C/code>\u003C/li>\n\u003C/ul>\n\u003Ch2>Playback Components\u003C/h2>\n\u003Ch3>\u003Ccode>VatAnimationSource\u003C/code>\u003C/h3>\n\u003Cul>\n\u003Cli>\u003Ccode>animation\u003C/code>\u003Cul>\n\u003Cli>\u003Ccode>Handle&lt;VatAnimationData&gt;\u003C/code>\u003C/li>\n\u003Cli>Required metadata asset\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>bounds_mode\u003C/code>\u003Cul>\n\u003Cli>\u003Ccode>VatBoundsMode\u003C/code>\u003C/li>\n\u003Cli>Default: \u003Ccode>UseMetadataAabb\u003C/code>\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003C/ul>\n\u003Ch3>\u003Ccode>VatPlayback\u003C/code>\u003C/h3>\n\u003Cul>\n\u003Cli>\u003Ccode>time_seconds\u003C/code>\u003Cul>\n\u003Cli>Clip-local playback time\u003C/li>\n\u003Cli>Default: \u003Ccode>0.0\u003C/code>\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>speed\u003C/code>\u003Cul>\n\u003Cli>Playback multiplier\u003C/li>\n\u003Cli>Default: \u003Ccode>1.0\u003C/code>\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>active_clip\u003C/code>\u003Cul>\n\u003Cli>Clip index into \u003Ccode>VatAnimationData::clips\u003C/code>\u003C/li>\n\u003Cli>Default: \u003Ccode>0\u003C/code>\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>loop_mode\u003C/code>\u003Cul>\n\u003Cli>\u003Ccode>VatLoopMode\u003C/code>\u003C/li>\n\u003Cli>Default: \u003Ccode>Loop\u003C/code>\u003C/li>\n\u003Cli>Note: if left at \u003Ccode>Loop\u003C/code>, clip metadata may provide a default override\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>playing\u003C/code>\u003Cul>\n\u003Cli>Whether time advances\u003C/li>\n\u003Cli>Default: \u003Ccode>true\u003C/code>\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003C/ul>\n\u003Ch3>\u003Ccode>VatCrossfade\u003C/code>\u003C/h3>\n\u003Cul>\n\u003Cli>\u003Ccode>from_clip\u003C/code>\u003Cul>\n\u003Cli>Source clip index\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>to_clip\u003C/code>\u003Cul>\n\u003Cli>Destination clip index\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>elapsed\u003C/code>\u003Cul>\n\u003Cli>Crossfade progress in seconds\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>duration\u003C/code>\u003Cul>\n\u003Cli>Crossfade length in seconds\u003C/li>\n\u003Cli>Clamped to at least \u003Ccode>0.0001\u003C/code>\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003C/ul>\n\u003Cp>Usage:\u003C/p>\n\u003Cul>\n\u003Cli>Insert \u003Ccode>VatCrossfade\u003C/code> while leaving \u003Ccode>VatPlayback.active_clip\u003C/code> on the currently playing source clip.\u003C/li>\n\u003Cli>The runtime captures the source clip/time internally and flips playback to \u003Ccode>to_clip\u003C/code>.\u003C/li>\n\u003Cli>Do not reset \u003Ccode>VatPlayback.time_seconds\u003C/code> manually when requesting the crossfade.\u003C/li>\n\u003C/ul>\n\u003Ch3>\u003Ccode>VatPlaybackTweaks\u003C/code>\u003C/h3>\n\u003Cul>\n\u003Cli>\u003Ccode>disable_interpolation\u003C/code>\u003Cul>\n\u003Cli>\u003Ccode>false\u003C/code> by default\u003C/li>\n\u003Cli>When \u003Ccode>true\u003C/code>, the runtime snaps to frame A instead of blending to frame B\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003C/ul>\n\u003Ch3>\u003Ccode>VatPlaybackFollower\u003C/code>\u003C/h3>\n\u003Cul>\n\u003Cli>\u003Ccode>leader\u003C/code>\u003Cul>\n\u003Cli>\u003Ccode>Entity\u003C/code>\u003C/li>\n\u003Cli>Required playback source entity to mirror\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>time_offset_seconds\u003C/code>\u003Cul>\n\u003Cli>\u003Ccode>0.0\u003C/code> by default\u003C/li>\n\u003Cli>Applies a signed clip-local offset after copying the leader state\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>mirror_loop_mode\u003C/code>\u003Cul>\n\u003Cli>\u003Ccode>true\u003C/code> by default\u003C/li>\n\u003Cli>When \u003Ccode>true\u003C/code>, the follower copies the leader loop mode before time normalization\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>mirror_crossfade\u003C/code>\u003Cul>\n\u003Cli>\u003Ccode>true\u003C/code> by default\u003C/li>\n\u003Cli>When \u003Ccode>true\u003C/code>, \u003Ccode>VatCrossfade\u003C/code> and its runtime source state are mirrored as well\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003C/ul>\n\u003Cp>Usage:\u003C/p>\n\u003Cul>\n\u003Cli>Add \u003Ccode>VatPlaybackFollower\u003C/code> to secondary meshes that should stay phase-locked to a leader mesh.\u003C/li>\n\u003Cli>Followers do not advance their own time independently while the component is present.\u003C/li>\n\u003Cli>Offsets are normalized through the resolved loop mode, so looping and ping-pong clips stay stable.\u003C/li>\n\u003C/ul>\n\u003Ch2>Enums\u003C/h2>\n\u003Ch3>\u003Ccode>VatLoopMode\u003C/code>\u003C/h3>\n\u003Cul>\n\u003Cli>\u003Ccode>Loop\u003C/code>\u003Cul>\n\u003Cli>Wraps at the end of the clip\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>Once\u003C/code>\u003Cul>\n\u003Cli>Clamps at the clip boundary and pauses playback\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>PingPong\u003C/code>\u003Cul>\n\u003Cli>Reflects at both clip boundaries\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>ClampForever\u003C/code>\u003Cul>\n\u003Cli>Clamps at the boundary without toggling \u003Ccode>playing\u003C/code>\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003C/ul>\n\u003Ch3>\u003Ccode>VatBoundsMode\u003C/code>\u003C/h3>\n\u003Cul>\n\u003Cli>\u003Ccode>UseMetadataAabb\u003C/code>\u003Cul>\n\u003Cli>Inserts metadata-driven \u003Ccode>Aabb\u003C/code>\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>KeepProxyAabb\u003C/code>\u003Cul>\n\u003Cli>Leaves the proxy mesh bounds untouched\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>DisableFrustumCulling\u003C/code>\u003Cul>\n\u003Cli>Adds \u003Ccode>NoFrustumCulling\u003C/code>\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003C/ul>\n\u003Ch2>Material Builder\u003C/h2>\n\u003Cp>\u003Ccode>build_vat_material(...)\u003C/code>\u003C/p>\n\u003Cp>Inputs:\u003C/p>\n\u003Cul>\n\u003Cli>base \u003Ccode>StandardMaterial\u003C/code>\u003C/li>\n\u003Cli>\u003Ccode>VatAnimationData\u003C/code>\u003C/li>\n\u003Cli>position texture handle\u003C/li>\n\u003Cli>optional normal texture handle\u003C/li>\n\u003Cli>\u003Ccode>VatMaterialDefaults\u003C/code>\u003C/li>\n\u003Cli>mutable \u003Ccode>Assets&lt;ShaderStorageBuffer&gt;\u003C/code>\u003C/li>\n\u003C/ul>\n\u003Cp>Failure cases:\u003C/p>\n\u003Cul>\n\u003Cli>metadata declares a separate normal texture but no normal handle is supplied\u003C/li>\n\u003C/ul>\n\u003Ch2>Validation Helpers\u003C/h2>\n\u003Cul>\n\u003Cli>\u003Ccode>validate_animation_data\u003C/code>\u003Cul>\n\u003Cli>metadata-only validation\u003C/li>\n\u003Cli>rejects undersized position-texture layouts, unsupported loop modes, unknown precision strings, and malformed normal descriptors\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>validate_mesh_for_animation\u003C/code>\u003Cul>\n\u003Cli>proxy mesh validation against metadata\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>metadata_aabb\u003C/code>\u003Cul>\n\u003Cli>converts metadata animation bounds into Bevy \u003Ccode>Aabb\u003C/code>\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003Cli>\u003Ccode>should_disable_frustum_culling\u003C/code>\u003Cul>\n\u003Cli>central policy helper for culling fallback\u003C/li>\n\u003C/ul>\n\u003C/li>\n\u003C/ul>\n",title:"Configuration",description:"Configuration documentation",rawMarkdown:"## Plugin\n\n`VertexAnimationTexturePlugin`\n\nFields:\n\n- `activate_schedule`\n  - Type: `Interned\u003Cdyn ScheduleLabel>`\n  - Effect: turns the runtime on\n- `deactivate_schedule`\n  - Type: `Interned\u003Cdyn ScheduleLabel>`\n  - Effect: turns the runtime off\n- `update_schedule`\n  - Type: `Interned\u003Cdyn ScheduleLabel>`\n  - Effect: hosts all `VatSystems`\n\nConvenience:\n\n- `VertexAnimationTexturePlugin::default()`\n- `VertexAnimationTexturePlugin::always_on(Update)`\n\n## Playback Components\n\n### `VatAnimationSource`\n\n- `animation`\n  - `Handle\u003CVatAnimationData>`\n  - Required metadata asset\n- `bounds_mode`\n  - `VatBoundsMode`\n  - Default: `UseMetadataAabb`\n\n### `VatPlayback`\n\n- `time_seconds`\n  - Clip-local playback time\n  - Default: `0.0`\n- `speed`\n  - Playback multiplier\n  - Default: `1.0`\n- `active_clip`\n  - Clip index into `VatAnimationData::clips`\n  - Default: `0`\n- `loop_mode`\n  - `VatLoopMode`\n  - Default: `Loop`\n  - Note: if left at `Loop`, clip metadata may provide a default override\n- `playing`\n  - Whether time advances\n  - Default: `true`\n\n### `VatCrossfade`\n\n- `from_clip`\n  - Source clip index\n- `to_clip`\n  - Destination clip index\n- `elapsed`\n  - Crossfade progress in seconds\n- `duration`\n  - Crossfade length in seconds\n  - Clamped to at least `0.0001`\n\nUsage:\n\n- Insert `VatCrossfade` while leaving `VatPlayback.active_clip` on the currently playing source clip.\n- The runtime captures the source clip/time internally and flips playback to `to_clip`.\n- Do not reset `VatPlayback.time_seconds` manually when requesting the crossfade.\n\n### `VatPlaybackTweaks`\n\n- `disable_interpolation`\n  - `false` by default\n  - When `true`, the runtime snaps to frame A instead of blending to frame B\n\n### `VatPlaybackFollower`\n\n- `leader`\n  - `Entity`\n  - Required playback source entity to mirror\n- `time_offset_seconds`\n  - `0.0` by default\n  - Applies a signed clip-local offset after copying the leader state\n- `mirror_loop_mode`\n  - `true` by default\n  - When `true`, the follower copies the leader loop mode before time normalization\n- `mirror_crossfade`\n  - `true` by default\n  - When `true`, `VatCrossfade` and its runtime source state are mirrored as well\n\nUsage:\n\n- Add `VatPlaybackFollower` to secondary meshes that should stay phase-locked to a leader mesh.\n- Followers do not advance their own time independently while the component is present.\n- Offsets are normalized through the resolved loop mode, so looping and ping-pong clips stay stable.\n\n## Enums\n\n### `VatLoopMode`\n\n- `Loop`\n  - Wraps at the end of the clip\n- `Once`\n  - Clamps at the clip boundary and pauses playback\n- `PingPong`\n  - Reflects at both clip boundaries\n- `ClampForever`\n  - Clamps at the boundary without toggling `playing`\n\n### `VatBoundsMode`\n\n- `UseMetadataAabb`\n  - Inserts metadata-driven `Aabb`\n- `KeepProxyAabb`\n  - Leaves the proxy mesh bounds untouched\n- `DisableFrustumCulling`\n  - Adds `NoFrustumCulling`\n\n## Material Builder\n\n`build_vat_material(...)`\n\nInputs:\n\n- base `StandardMaterial`\n- `VatAnimationData`\n- position texture handle\n- optional normal texture handle\n- `VatMaterialDefaults`\n- mutable `Assets\u003CShaderStorageBuffer>`\n\nFailure cases:\n\n- metadata declares a separate normal texture but no normal handle is supplied\n\n## Validation Helpers\n\n- `validate_animation_data`\n  - metadata-only validation\n  - rejects undersized position-texture layouts, unsupported loop modes, unknown precision strings, and malformed normal descriptors\n- `validate_mesh_for_animation`\n  - proxy mesh validation against metadata\n- `metadata_aabb`\n  - converts metadata animation bounds into Bevy `Aabb`\n- `should_disable_frustum_culling`\n  - central policy helper for culling fallback\n",slug:"configuration"},uses:{params:["slug"]}}],
+							form: null,
+							error: null
+						});
+					});
+				}
+			</script>
+		</div>
+	</body>
+</html>
