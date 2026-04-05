@@ -101,3 +101,35 @@ Deferred:
 - rigid-body VAT rotation / pivot textures
 - auxiliary shading channels in the shader path
 - advanced GPU-side instancing extraction beyond the material storage-buffer path
+
+## Performance Model
+
+The runtime cost scales as follows:
+
+- **CPU per-entity**: one `VatPlaybackRuntime` iteration per entity with `VatPlayback`, plus one
+  storage-buffer write per entity per frame. This is dominated by ECS iteration, not animation math.
+- **CPU per-material**: one storage-buffer upload per unique `Handle<VatMaterial>`. Groups of entities
+  sharing the same material are packed into a single buffer.
+- **GPU per-entity**: two texture fetches per frame (frame A + frame B) for position, optionally two
+  more for normals. During crossfade, these double (secondary clip). Each fetch is a nearest-neighbor
+  point sample — no filtering overhead.
+- **GPU per-draw-call**: all entities sharing the same material and mesh are drawn in one instanced
+  call. The vertex shader indexes the storage buffer via `MeshTag`.
+
+For crowds of 1,000–10,000 entities sharing one material, the bottleneck is typically vertex shader
+throughput (texture bandwidth), not CPU-side ECS iteration.
+
+## Message Flow
+
+The crate uses Bevy 0.18 Messages (not Events) for `VatClipFinished` and `VatEventReached`.
+Messages are written in `VatSystems::EmitMessages` and can be read by consumers in any later
+system. Messages are transient — they only exist for one frame.
+
+Event detection works by recording "traversal segments" during time advancement. Each segment
+represents a contiguous range of clip-local time that was traversed in a single frame. Events
+fire when a segment crosses a threshold time. This correctly handles:
+
+- Normal forward playback
+- Reverse playback (negative speed)
+- PingPong direction changes
+- Multiple loop wraps in a single large delta

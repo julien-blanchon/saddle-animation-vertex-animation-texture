@@ -1,5 +1,5 @@
-use saddle_pane::binding::RegisterPaneExt;
 use saddle_animation_vertex_animation_texture_example_support as support;
+use saddle_pane::binding::RegisterPaneExt;
 
 use bevy::{color::LinearRgba, prelude::*};
 use saddle_animation_vertex_animation_texture::{
@@ -7,7 +7,7 @@ use saddle_animation_vertex_animation_texture::{
     VatPlaybackTweaks, VertexAnimationTexturePlugin, build_vat_material,
     parse_vat_animation_data_str,
 };
-use support::{VatPaneControlled, spin_demo_lights, DEMO_FRAMES_PER_CLIP};
+use support::{DEMO_FRAMES_PER_CLIP, VatPaneControlled, spin_demo_lights};
 
 fn main() {
     let mut app = App::new();
@@ -38,9 +38,12 @@ fn main() {
     app.add_systems(PreUpdate, support::sync_vat_pane);
     app.add_systems(PostUpdate, support::reflect_vat_pane);
     app.add_systems(Startup, setup);
-    app.add_systems(Update, spin_demo_lights);
+    app.add_systems(Update, (spin_demo_lights, update_overlay));
     app.run();
 }
+
+#[derive(Component)]
+struct Overlay;
 
 fn setup(
     mut commands: Commands,
@@ -117,4 +120,19 @@ fn setup(
             ));
         }
     }
+
+    // -- On-screen instructions --
+    let overlay = support::spawn_overlay(&mut commands, "VAT Crowd");
+    commands.entity(overlay).insert(Overlay);
+}
+
+fn update_overlay(mut overlay: Query<&mut Text, With<Overlay>>) {
+    let Ok(mut text) = overlay.single_mut() else {
+        return;
+    };
+    support::write_overlay(
+        &mut text,
+        "VAT Crowd",
+        "54 independently animated instances sharing\none material and one storage buffer.\n\nEach actor has a unique speed and phase offset.\nAll are rendered with GPU instancing.\n\nUse the pane (top-right) to adjust:\n  speed, interpolation, scale",
+    );
 }

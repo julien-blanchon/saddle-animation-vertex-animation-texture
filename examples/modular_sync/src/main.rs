@@ -1,5 +1,5 @@
-use saddle_pane::binding::RegisterPaneExt;
 use saddle_animation_vertex_animation_texture_example_support as support;
+use saddle_pane::binding::RegisterPaneExt;
 
 use bevy::{color::LinearRgba, prelude::*};
 use saddle_animation_vertex_animation_texture::{
@@ -38,9 +38,12 @@ fn main() {
     app.add_systems(PreUpdate, support::sync_vat_pane);
     app.add_systems(PostUpdate, support::reflect_vat_pane);
     app.add_systems(Startup, setup);
-    app.add_systems(Update, spin_demo_lights);
+    app.add_systems(Update, (spin_demo_lights, update_overlay));
     app.run();
 }
+
+#[derive(Component)]
+struct Overlay;
 
 fn setup(
     mut commands: Commands,
@@ -126,4 +129,30 @@ fn setup(
                 .with_scale(follower_scale),
         ));
     }
+
+    // -- On-screen instructions --
+    let overlay = support::spawn_overlay(&mut commands, "VAT Modular Sync");
+    commands.entity(overlay).insert(Overlay);
+}
+
+fn update_overlay(
+    mut overlay: Query<&mut Text, With<Overlay>>,
+    leader: Query<&VatPlayback, Without<VatPlaybackFollower>>,
+    followers: Query<&VatPlaybackFollower>,
+) {
+    let Ok(mut text) = overlay.single_mut() else {
+        return;
+    };
+    let leader_playback = leader.iter().next();
+    let follower_count = followers.iter().count();
+    support::write_overlay(
+        &mut text,
+        "VAT Modular Sync",
+        &format!(
+            "Leader/follower sync for modular actors.\nFollowers mirror the leader's playback state\nwith configurable time offsets.\n\nleader clip: {}  time: {:.2}\nfollowers: {}\n\nUseful for multi-mesh characters (body +\narmor + weapon) that must stay in phase.\n\nUse the pane to adjust:\n  clip, speed, follower offset",
+            leader_playback.map_or(0, |p| p.active_clip),
+            leader_playback.map_or(0.0, |p| p.time_seconds),
+            follower_count,
+        ),
+    );
 }

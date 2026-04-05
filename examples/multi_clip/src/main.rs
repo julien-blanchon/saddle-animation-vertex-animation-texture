@@ -5,12 +5,15 @@ use saddle_animation_vertex_animation_texture::{
     VatCrossfade, VatMaterial, VatMaterialDefaults, VatPlayback, VatPlaybackTweaks,
 };
 use support::{
-    demo_app, load_demo_assets, spawn_demo_camera, spawn_demo_environment, spawn_vat_actor,
-    spin_demo_lights,
+    demo_app, load_demo_assets, spawn_demo_camera, spawn_demo_environment, spawn_overlay,
+    spawn_vat_actor, spin_demo_lights, write_overlay,
 };
 
 #[derive(Component)]
 struct ClipShowcase;
+
+#[derive(Component)]
+struct Overlay;
 
 #[derive(Resource)]
 struct ClipCycle {
@@ -25,7 +28,7 @@ fn main() {
         current_index: 0,
     });
     app.add_systems(Startup, setup);
-    app.add_systems(Update, (spin_demo_lights, cycle_clips));
+    app.add_systems(Update, (spin_demo_lights, cycle_clips, update_overlay));
     app.run();
 }
 
@@ -63,6 +66,9 @@ fn setup(
     commands
         .entity(entity)
         .insert((ClipShowcase, VatPlaybackTweaks::default()));
+
+    let overlay = spawn_overlay(&mut commands, "VAT Multi Clip");
+    commands.entity(overlay).insert(Overlay);
 }
 
 fn cycle_clips(
@@ -87,4 +93,26 @@ fn cycle_clips(
         .entity(entity)
         .insert(VatCrossfade::new(playback.active_clip, next_clip, 0.6));
     cycle.current_index = next_clip;
+}
+
+fn update_overlay(
+    mut overlay: Query<&mut Text, With<Overlay>>,
+    showcase: Query<(&VatPlayback, Option<&VatCrossfade>), With<ClipShowcase>>,
+    cycle: Res<ClipCycle>,
+) {
+    let Ok(mut text) = overlay.single_mut() else {
+        return;
+    };
+    let (playback, crossfade) = showcase.single().unwrap();
+    write_overlay(
+        &mut text,
+        "VAT Multi Clip",
+        &format!(
+            "Auto-cycles through 3 clips with crossfade.\nClips share a single baked VAT texture.\n\nactive clip: {} (cycling to: {})\ntime: {:.2}  crossfading: {}\n\nCrossfade blends two clips in the vertex\nshader — no CPU skinning overhead.",
+            playback.active_clip,
+            cycle.current_index,
+            playback.time_seconds,
+            crossfade.is_some(),
+        ),
+    );
 }

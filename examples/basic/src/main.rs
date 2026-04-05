@@ -1,5 +1,5 @@
-use saddle_pane::binding::RegisterPaneExt;
 use saddle_animation_vertex_animation_texture_example_support as support;
+use saddle_pane::binding::RegisterPaneExt;
 
 use bevy::{color::LinearRgba, prelude::*};
 use saddle_animation_vertex_animation_texture::{
@@ -38,9 +38,12 @@ fn main() {
     app.add_systems(PreUpdate, support::sync_vat_pane);
     app.add_systems(PostUpdate, support::reflect_vat_pane);
     app.add_systems(Startup, setup);
-    app.add_systems(Update, spin_demo_lights);
+    app.add_systems(Update, (spin_demo_lights, update_overlay));
     app.run();
 }
+
+#[derive(Component)]
+struct Overlay;
 
 fn setup(
     mut commands: Commands,
@@ -112,4 +115,22 @@ fn setup(
         .id();
 
     let _ = actor;
+
+    // -- On-screen instructions --
+    let overlay = support::spawn_overlay(&mut commands, "VAT Basic");
+    commands.entity(overlay).insert(Overlay);
+}
+
+fn update_overlay(mut overlay: Query<&mut Text, With<Overlay>>, actor: Single<&VatPlayback>) {
+    let Ok(mut text) = overlay.single_mut() else {
+        return;
+    };
+    support::write_overlay(
+        &mut text,
+        "VAT Basic",
+        &format!(
+            "Single soft-body VAT mesh with GPU-driven\nvertex deformation from baked textures.\n\nclip: {}  time: {:.2}  speed: {:.1}\n\nUse the pane (top-right) to adjust:\n  speed, interpolation, scale, clip",
+            actor.active_clip, actor.time_seconds, actor.speed,
+        ),
+    );
 }

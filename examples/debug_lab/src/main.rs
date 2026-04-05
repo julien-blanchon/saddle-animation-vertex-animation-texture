@@ -72,13 +72,11 @@ fn setup(
         Vec3::new(-0.8, 0.0, 0.0),
         Vec3::splat(2.4),
     );
-    commands
-        .entity(hero)
-        .insert((
-            Hero,
-            VatPlaybackTweaks::default(),
-            VatPaneControlled::new(1.0, Vec3::splat(2.4)).with_clip_sync(),
-        ));
+    commands.entity(hero).insert((
+        Hero,
+        VatPlaybackTweaks::default(),
+        VatPaneControlled::new(1.0, Vec3::splat(2.4)).with_clip_sync(),
+    ));
 
     spawn_vat_actor(
         &mut commands,

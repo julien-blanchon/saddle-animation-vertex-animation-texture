@@ -135,6 +135,45 @@ Failure cases:
 
 - metadata declares a separate normal texture but no normal handle is supplied
 
+## Messages
+
+### `VatClipFinished`
+
+Emitted each time a clip reaches its boundary (loop wrap, once completion, ping-pong bounce).
+
+Fields:
+
+- `entity` — the entity that finished
+- `clip_index` — which clip finished
+- `clip_name` — the clip's metadata name
+- `finished_at_seconds` — the clip-local time at the boundary
+
+Usage:
+
+```rust
+fn on_clip_finished(mut messages: MessageReader<VatClipFinished>) {
+    for msg in messages.read() {
+        info!("{} finished clip '{}'", msg.entity, msg.clip_name);
+    }
+}
+```
+
+### `VatEventReached`
+
+Emitted when playback crosses a named event frame defined in the metadata.
+
+Fields:
+
+- `entity` — the entity that crossed the event
+- `clip_index` — which clip the event belongs to
+- `clip_name` — the clip's metadata name
+- `event_name` — the event's metadata name
+- `clip_frame` — the frame index within the clip
+- `normalized_time` — the event's position as a 0–1 fraction of the clip
+- `reached_at_seconds` — the clip-local time of the event
+
+Events fire exactly once per threshold crossing, even during reverse playback or ping-pong.
+
 ## Validation Helpers
 
 - `validate_animation_data`
@@ -146,3 +185,13 @@ Failure cases:
   - converts metadata animation bounds into Bevy `Aabb`
 - `should_disable_frustum_culling`
   - central policy helper for culling fallback
+
+## Utility Functions
+
+- `configure_vat_data_image(image)` — sets nearest/point sampling on a VAT data texture
+- `make_linear_rgba8_image(size, data)` — creates a linear Rgba8Unorm image with nearest sampling
+- `decode_position_sample(encoded, animation, proxy_position)` — decodes a single position sample for debugging
+- `convert_coordinate_system(value, coordinate_system)` — converts from source coordinate system to Bevy's Y-up
+- `valid_bounds(min, max)` — checks that bounds are finite and min <= max
+- `parse_vat_animation_data_str(json)` — parses a JSON string into `VatAnimationData`
+- `parse_vat_animation_data_bytes(bytes)` — parses JSON bytes into `VatAnimationData`

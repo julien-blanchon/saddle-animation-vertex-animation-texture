@@ -15,8 +15,8 @@ use saddle_animation_vertex_animation_texture::{
     VatPlaybackFollower, VatPlaybackTweaks,
 };
 use support::{
-    VatFollowerOffsetScale, demo_app, load_demo_assets, spawn_demo_camera,
-    spawn_demo_environment, spawn_overlay, spawn_vat_actor, spin_demo_lights, write_overlay,
+    VatFollowerOffsetScale, demo_app, load_demo_assets, spawn_demo_camera, spawn_demo_environment,
+    spawn_overlay, spawn_vat_actor, spin_demo_lights, write_overlay,
 };
 
 #[derive(Component)]

@@ -8,13 +8,12 @@ use bevy::{
     prelude::*,
     render::{render_resource::PrimitiveTopology, storage::ShaderStorageBuffer},
 };
-use saddle_pane::prelude::*;
 use saddle_animation_vertex_animation_texture::{
     VatAnimationData, VatAnimationSource, VatCrossfade, VatMaterial, VatMaterialDefaults,
-    VatPlayback, VatPlaybackFollower, VatPlaybackTweaks,
-    VertexAnimationTexturePlugin, build_vat_material, make_linear_rgba8_image,
-    parse_vat_animation_data_str,
+    VatPlayback, VatPlaybackFollower, VatPlaybackTweaks, VertexAnimationTexturePlugin,
+    build_vat_material, make_linear_rgba8_image, parse_vat_animation_data_str,
 };
+use saddle_pane::prelude::*;
 
 pub const AUTO_EXIT_ENV: &str = "VAT_AUTO_EXIT_SECONDS";
 pub const DEMO_COLUMNS: usize = 8;
@@ -352,7 +351,14 @@ pub fn sync_vat_pane(
 
 pub fn reflect_vat_pane(
     mut pane: ResMut<VatExamplePane>,
-    query: Query<(&VatPlayback, Option<&VatCrossfade>, Option<&VatPlaybackFollower>), With<VatPaneControlled>>,
+    query: Query<
+        (
+            &VatPlayback,
+            Option<&VatCrossfade>,
+            Option<&VatPlaybackFollower>,
+        ),
+        With<VatPaneControlled>,
+    >,
 ) {
     let mut actor_count = 0;
     let mut active_crossfades = 0;
