@@ -29,6 +29,8 @@ pub enum VatValidationError {
     InvalidClipRange { clip_name: String },
     #[error("clip '{clip_name}' is outside the baked frame range")]
     ClipOutOfBounds { clip_name: String },
+    #[error("default clip '{clip_name}' does not exist in metadata")]
+    UnknownDefaultClip { clip_name: String },
     #[error("clip '{clip_name}' contains event '{event_name}' outside the clip frame range")]
     EventOutOfBounds {
         clip_name: String,
@@ -100,6 +102,13 @@ pub fn validate_animation_data(animation: &VatAnimationData) -> Result<(), VatVa
     }
     if animation.clips.is_empty() {
         return Err(VatValidationError::MissingClips);
+    }
+    if let Some(default_clip) = animation.default_clip.as_deref()
+        && animation.clip_index_by_name(default_clip).is_none()
+    {
+        return Err(VatValidationError::UnknownDefaultClip {
+            clip_name: default_clip.to_owned(),
+        });
     }
     if !valid_bounds(animation.decode_bounds_min, animation.decode_bounds_max) {
         return Err(VatValidationError::InvalidDecodeBounds);

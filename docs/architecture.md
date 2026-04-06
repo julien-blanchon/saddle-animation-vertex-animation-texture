@@ -26,6 +26,8 @@
    - `VatAnimationSource`
    - `VatPlayback`
 4. `VatSystems::AdvancePlayback`
+   - resolves `VatPlayback.startup_clip` into a concrete clip index
+   - applies `invalid_clip_fallback` if the resolved clip becomes invalid
    - advances clip-local time
    - applies loop policy
    - advances crossfade source state
@@ -53,7 +55,7 @@ meshes that all share the same VAT metadata layout.
 
 - The leader owns the real `VatPlayback`
 - Followers skip independent time advancement
-- The follower sync pass copies clip index, play/pause state, optional loop mode, and optional
+- The follower sync pass copies the resolved clip selection, play/pause state, optional loop mode, and optional
   crossfade state
 - Per-follower `time_offset_seconds` is applied after loop normalization so crowds and layered props
   can intentionally stagger motion without drifting out of phase
@@ -124,6 +126,16 @@ throughput (texture bandwidth), not CPU-side ECS iteration.
 The crate uses Bevy 0.18 Messages (not Events) for `VatClipFinished` and `VatEventReached`.
 Messages are written in `VatSystems::EmitMessages` and can be read by consumers in any later
 system. Messages are transient — they only exist for one frame.
+
+Clip selection is intentionally split between a high-level startup selector and a resolved runtime
+index:
+
+- `VatPlayback.startup_clip`
+  - metadata default, clip name, or explicit index
+- `VatPlayback.active_clip`
+  - the validated runtime index currently driving playback
+- `VatPlayback.invalid_clip_fallback`
+  - policy used when an explicit or stale clip selection no longer resolves cleanly
 
 Event detection works by recording "traversal segments" during time advancement. Each segment
 represents a contiguous range of clip-local time that was traversed in a single frame. Events

@@ -102,7 +102,11 @@ fn setup(
             let x = column as f32 * 0.75 - 3.0;
             let z = row as f32 * 0.55 - 1.2;
             let phase = (seed as f32 * 0.173).fract() * DEMO_FRAMES_PER_CLIP as f32 / 24.0;
-            let clip_index = if seed % 5 == 0 { 1 } else { 0 };
+            let clip_name = if seed % 5 == 0 {
+                support::DEMO_CLIP_GUST
+            } else {
+                support::DEMO_CLIP_IDLE
+            };
             let scale = Vec3::splat(1.35);
 
             commands.spawn((
@@ -113,7 +117,7 @@ fn setup(
                 VatPlaybackTweaks::default(),
                 VatPaneControlled::new(0.85 + (seed % 7) as f32 * 0.07, scale),
                 VatPlayback::default()
-                    .with_clip(clip_index)
+                    .with_clip_name(clip_name)
                     .with_speed(0.85 + (seed % 7) as f32 * 0.07)
                     .with_time_seconds(phase),
                 Transform::from_translation(Vec3::new(x, 0.0, z)).with_scale(scale),
@@ -133,6 +137,6 @@ fn update_overlay(mut overlay: Query<&mut Text, With<Overlay>>) {
     support::write_overlay(
         &mut text,
         "VAT Crowd",
-        "54 independently animated instances sharing\none material and one storage buffer.\n\nEach actor has a unique speed and phase offset.\nAll are rendered with GPU instancing.\n\nUse the pane (top-right) to adjust:\n  speed, interpolation, scale",
+        "54 independently animated instances sharing\none material and one storage buffer.\n\nActors are assigned named clips from metadata\n(idle and gust), plus unique speed and phase.\n\nUse the pane (top-right) to adjust:\n  speed, interpolation, scale",
     );
 }

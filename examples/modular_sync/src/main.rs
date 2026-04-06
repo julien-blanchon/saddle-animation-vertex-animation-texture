@@ -104,8 +104,8 @@ fn setup(
             MeshMaterial3d(material.clone()),
             VatAnimationSource::new(animation_handle.clone()),
             VatPlaybackTweaks::default(),
-            VatPaneControlled::new(1.0, leader_scale).with_clip_sync(),
-            VatPlayback::default().with_clip(1),
+            VatPaneControlled::new(1.0, leader_scale),
+            VatPlayback::default().with_clip_name(support::DEMO_CLIP_GUST),
             Transform::from_translation(Vec3::new(-2.4, 0.0, 0.0)).with_scale(leader_scale),
         ))
         .id();
@@ -137,21 +137,35 @@ fn setup(
 
 fn update_overlay(
     mut overlay: Query<&mut Text, With<Overlay>>,
-    leader: Query<&VatPlayback, Without<VatPlaybackFollower>>,
+    leader: Query<
+        (
+            &VatPlayback,
+            &saddle_animation_vertex_animation_texture::VatAnimationSource,
+        ),
+        Without<VatPlaybackFollower>,
+    >,
     followers: Query<&VatPlaybackFollower>,
+    animations: Res<Assets<VatAnimationData>>,
 ) {
     let Ok(mut text) = overlay.single_mut() else {
         return;
     };
     let leader_playback = leader.iter().next();
     let follower_count = followers.iter().count();
+    let clip_name = leader_playback
+        .and_then(|(playback, source)| {
+            animations
+                .get(&source.animation)
+                .and_then(|animation| playback.active_clip_name(animation))
+        })
+        .unwrap_or("resolving");
     support::write_overlay(
         &mut text,
         "VAT Modular Sync",
         &format!(
-            "Leader/follower sync for modular actors.\nFollowers mirror the leader's playback state\nwith configurable time offsets.\n\nleader clip: {}  time: {:.2}\nfollowers: {}\n\nUseful for multi-mesh characters (body +\narmor + weapon) that must stay in phase.\n\nUse the pane to adjust:\n  clip, speed, follower offset",
-            leader_playback.map_or(0, |p| p.active_clip),
-            leader_playback.map_or(0.0, |p| p.time_seconds),
+            "Leader/follower sync for modular actors.\nFollowers mirror the leader's playback state\nwith configurable time offsets.\n\nleader clip: {}  time: {:.2}\nfollowers: {}\n\nUseful for multi-mesh characters (body +\narmor + weapon) that must stay in phase.\n\nUse the pane to adjust:\n  speed, follower offset, scale",
+            clip_name,
+            leader_playback.map_or(0.0, |(playback, _)| playback.time_seconds),
             follower_count,
         ),
     );

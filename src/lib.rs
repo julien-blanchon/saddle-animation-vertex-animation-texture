@@ -15,17 +15,17 @@ mod validation;
 
 pub use asset::{
     VatAnimationData, VatAnimationMode, VatAuxTextureDescriptor, VatAuxTextureSemantic, VatClip,
-    VatClipEvent, VatCoordinateSystem, VatNormalEncoding, VatNormalTexture, VatPlaybackSpace,
-    VatPositionEncoding, VatSourceFormat, VatTextureDescriptor, VatTexturePrecision,
-    VatVertexIdAttribute,
+    VatClipEvent, VatClipResolveError, VatCoordinateSystem, VatNormalEncoding, VatNormalTexture,
+    VatPlaybackSpace, VatPositionEncoding, VatSourceFormat, VatTextureDescriptor,
+    VatTexturePrecision, VatVertexIdAttribute,
 };
 pub use asset_loader::{
     VatAnimationDataLoader, VatMetadataLoadError, parse_vat_animation_data_bytes,
     parse_vat_animation_data_str,
 };
 pub use components::{
-    VatAnimationBundle, VatAnimationSource, VatBoundsMode, VatCrossfade, VatLoopMode, VatPlayback,
-    VatPlaybackFollower, VatPlaybackTweaks,
+    VatAnimationBundle, VatAnimationSource, VatBoundsMode, VatClipSelection, VatCrossfade,
+    VatInvalidClipFallback, VatLoopMode, VatPlayback, VatPlaybackFollower, VatPlaybackTweaks,
 };
 pub use material::{
     VatMaterial, VatMaterialBuildError, VatMaterialDefaults, VatMaterialExt, VatMaterialUniform,
@@ -105,9 +105,11 @@ impl Plugin for VertexAnimationTexturePlugin {
             .register_type::<VatAuxTextureDescriptor>()
             .register_type::<VatBoundsMode>()
             .register_type::<VatClip>()
+            .register_type::<VatClipSelection>()
             .register_type::<VatClipEvent>()
             .register_type::<VatCoordinateSystem>()
             .register_type::<VatCrossfade>()
+            .register_type::<VatInvalidClipFallback>()
             .register_type::<VatLoopMode>()
             .register_type::<VatNormalEncoding>()
             .register_type::<VatNormalTexture>()

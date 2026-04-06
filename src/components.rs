@@ -45,7 +45,9 @@ impl Default for VatAnimationSource {
 pub struct VatPlayback {
     pub time_seconds: f32,
     pub speed: f32,
-    pub active_clip: usize,
+    pub active_clip: Option<usize>,
+    pub startup_clip: VatClipSelection,
+    pub invalid_clip_fallback: VatInvalidClipFallback,
     pub loop_mode: VatLoopMode,
     pub playing: bool,
 }
@@ -53,7 +55,36 @@ pub struct VatPlayback {
 impl VatPlayback {
     #[must_use]
     pub fn with_clip(mut self, clip_index: usize) -> Self {
-        self.active_clip = clip_index;
+        self.active_clip = Some(clip_index);
+        self.startup_clip = VatClipSelection::Index(clip_index);
+        self
+    }
+
+    #[must_use]
+    pub fn with_clip_index(self, clip_index: usize) -> Self {
+        self.with_clip(clip_index)
+    }
+
+    #[must_use]
+    pub fn with_clip_name(mut self, clip_name: impl Into<String>) -> Self {
+        self.active_clip = None;
+        self.startup_clip = VatClipSelection::Name(clip_name.into());
+        self
+    }
+
+    #[must_use]
+    pub fn with_metadata_default_clip(mut self) -> Self {
+        self.active_clip = None;
+        self.startup_clip = VatClipSelection::MetadataDefault;
+        self
+    }
+
+    #[must_use]
+    pub fn with_invalid_clip_fallback(
+        mut self,
+        invalid_clip_fallback: VatInvalidClipFallback,
+    ) -> Self {
+        self.invalid_clip_fallback = invalid_clip_fallback;
         self
     }
 
@@ -80,6 +111,36 @@ impl VatPlayback {
         self.playing = false;
         self
     }
+
+    pub fn play_clip_named(
+        &mut self,
+        animation: &VatAnimationData,
+        clip_name: &str,
+    ) -> Result<usize, crate::VatClipResolveError> {
+        let clip_index =
+            animation.resolve_clip_selection(&VatClipSelection::Name(clip_name.to_owned()))?;
+        self.active_clip = Some(clip_index);
+        self.startup_clip = VatClipSelection::Name(clip_name.to_owned());
+        Ok(clip_index)
+    }
+
+    pub fn play_clip_index(
+        &mut self,
+        animation: &VatAnimationData,
+        clip_index: usize,
+    ) -> Result<usize, crate::VatClipResolveError> {
+        let clip_index = animation.resolve_clip_selection(&VatClipSelection::Index(clip_index))?;
+        self.active_clip = Some(clip_index);
+        self.startup_clip = VatClipSelection::Index(clip_index);
+        Ok(clip_index)
+    }
+
+    #[must_use]
+    pub fn active_clip_name<'a>(&self, animation: &'a VatAnimationData) -> Option<&'a str> {
+        self.active_clip
+            .and_then(|clip_index| animation.clip(clip_index))
+            .map(|clip| clip.name.as_str())
+    }
 }
 
 impl Default for VatPlayback {
@@ -87,7 +148,9 @@ impl Default for VatPlayback {
         Self {
             time_seconds: 0.0,
             speed: 1.0,
-            active_clip: 0,
+            active_clip: None,
+            startup_clip: VatClipSelection::MetadataDefault,
+            invalid_clip_fallback: VatInvalidClipFallback::StartupClipThenFirstValid,
             loop_mode: VatLoopMode::Loop,
             playing: true,
         }
@@ -117,6 +180,33 @@ impl VatCrossfade {
     #[must_use]
     pub fn weight(&self) -> f32 {
         (self.elapsed / self.duration).clamp(0.0, 1.0)
+    }
+
+    pub fn between_clip_names(
+        animation: &VatAnimationData,
+        from_clip_name: &str,
+        to_clip_name: &str,
+        duration: f32,
+    ) -> Result<Self, crate::VatClipResolveError> {
+        let from_clip =
+            animation.resolve_clip_selection(&VatClipSelection::Name(from_clip_name.to_owned()))?;
+        let to_clip =
+            animation.resolve_clip_selection(&VatClipSelection::Name(to_clip_name.to_owned()))?;
+        Ok(Self::new(from_clip, to_clip, duration))
+    }
+
+    pub fn to_clip_name(
+        animation: &VatAnimationData,
+        playback: &VatPlayback,
+        to_clip_name: &str,
+        duration: f32,
+    ) -> Result<Self, crate::VatClipResolveError> {
+        let from_clip = playback
+            .active_clip
+            .ok_or(crate::VatClipResolveError::UnresolvedPlaybackClip)?;
+        let to_clip =
+            animation.resolve_clip_selection(&VatClipSelection::Name(to_clip_name.to_owned()))?;
+        Ok(Self::new(from_clip, to_clip, duration))
     }
 }
 
@@ -172,6 +262,22 @@ pub enum VatLoopMode {
     Once,
     PingPong,
     ClampForever,
+}
+
+#[derive(Clone, Debug, Reflect, Default, PartialEq, Eq, Hash)]
+pub enum VatClipSelection {
+    #[default]
+    MetadataDefault,
+    Index(usize),
+    Name(String),
+}
+
+#[derive(Clone, Copy, Debug, Reflect, Default, PartialEq, Eq, Hash)]
+pub enum VatInvalidClipFallback {
+    #[default]
+    StartupClipThenFirstValid,
+    FirstValid,
+    KeepCurrent,
 }
 
 #[derive(Clone, Copy, Debug, Reflect, Default, PartialEq, Eq, Hash)]

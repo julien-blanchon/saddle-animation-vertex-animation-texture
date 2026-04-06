@@ -41,8 +41,17 @@ Convenience:
   - Playback multiplier
   - Default: `1.0`
 - `active_clip`
-  - Clip index into `VatAnimationData::clips`
-  - Default: `0`
+  - Resolved clip index into `VatAnimationData::clips`
+  - Type: `Option<usize>`
+  - Default: `None` until metadata or startup selection resolves it
+- `startup_clip`
+  - Type: `VatClipSelection`
+  - Default: `MetadataDefault`
+  - Effect: chooses the first clip to play when `active_clip` is unresolved
+- `invalid_clip_fallback`
+  - Type: `VatInvalidClipFallback`
+  - Default: `StartupClipThenFirstValid`
+  - Effect: recovery policy when the resolved clip index becomes invalid
 - `loop_mode`
   - `VatLoopMode`
   - Default: `Loop`
@@ -65,6 +74,7 @@ Convenience:
 
 Usage:
 
+- Prefer `VatCrossfade::between_clip_names(...)` or `VatCrossfade::to_clip_name(...)` when you have metadata available.
 - Insert `VatCrossfade` while leaving `VatPlayback.active_clip` on the currently playing source clip.
 - The runtime captures the source clip/time internally and flips playback to `to_clip`.
 - Do not reset `VatPlayback.time_seconds` manually when requesting the crossfade.
@@ -195,3 +205,23 @@ Events fire exactly once per threshold crossing, even during reverse playback or
 - `valid_bounds(min, max)` — checks that bounds are finite and min <= max
 - `parse_vat_animation_data_str(json)` — parses a JSON string into `VatAnimationData`
 - `parse_vat_animation_data_bytes(bytes)` — parses JSON bytes into `VatAnimationData`
+
+## Clip Selection Types
+
+### `VatClipSelection`
+
+- `MetadataDefault`
+  - Resolve the startup clip from `VatAnimationData::default_clip`
+- `Index(usize)`
+  - Low-level numeric escape hatch
+- `Name(String)`
+  - Resolve the startup clip by metadata clip name
+
+### `VatInvalidClipFallback`
+
+- `StartupClipThenFirstValid`
+  - Re-resolve `startup_clip`, then fall back to the first clip if needed
+- `FirstValid`
+  - Always recover to the first clip in metadata
+- `KeepCurrent`
+  - Keep the last validated clip if it still exists

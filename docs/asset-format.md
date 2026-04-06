@@ -24,6 +24,7 @@ Required top-level fields in the canonical JSON format:
 Optional top-level fields:
 
 - `animation_bounds`
+- `default_clip`
 - `normal_texture`
 - `rotation_texture`
 - `auxiliary_textures`
@@ -41,6 +42,7 @@ Optional top-level fields:
     "min": [-0.85, -0.1, -0.42],
     "max": [0.85, 1.75, 0.42]
   },
+  "default_clip": "idle",
   "clips": [
     { "name": "idle", "start_frame": 0, "end_frame": 23 }
   ],
@@ -66,6 +68,7 @@ Accepted today:
 - `os-remap.Max`
 - `os-remap.Frames`
 - `animations`
+- optional `default_clip` / `default_animation`
 - plus runtime-required layout fields:
   - `vertex_count`
   - `texture_width`
@@ -84,6 +87,7 @@ Metadata validation rejects:
 - zero frames
 - zero vertices
 - empty clip list
+- default clips that do not match any declared clip name
 - invalid decode or animation bounds
 - position textures that cannot address `vertex_count` texels per frame
 - position textures whose `height` and `rows_per_frame` do not cover all baked frames

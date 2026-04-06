@@ -8,6 +8,7 @@
   "texture_width": 81,
   "texture_height": 72,
   "rows_per_frame": 1,
+  "default_clip": "idle",
   "coordinate_system": "y_up_right_handed",
   "playback_space": "local",
   "packed_normals": false,

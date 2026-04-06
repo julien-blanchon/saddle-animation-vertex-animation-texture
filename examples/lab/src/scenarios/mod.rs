@@ -5,6 +5,7 @@ use crate::{BoundsProbe, CrowdMember, Hero, LabControl, LabDiagnostics};
 
 pub fn list_scenarios() -> Vec<&'static str> {
     vec![
+        "vat_metadata_default",
         "vat_smoke",
         "vat_multi_clip",
         "vat_crowd",
@@ -16,6 +17,7 @@ pub fn list_scenarios() -> Vec<&'static str> {
 
 pub fn scenario_by_name(name: &str) -> Option<Scenario> {
     match name {
+        "vat_metadata_default" => Some(build_metadata_default()),
         "vat_smoke" => Some(build_smoke()),
         "vat_multi_clip" => Some(build_multi_clip()),
         "vat_crowd" => Some(build_crowd()),
@@ -26,13 +28,28 @@ pub fn scenario_by_name(name: &str) -> Option<Scenario> {
     }
 }
 
-fn request_clip(clip: usize) -> Action {
+fn request_clip_name(clip_name: &'static str) -> Action {
     Action::Custom(Box::new(move |world: &mut World| {
         let mut control = world.resource_mut::<LabControl>();
         control.auto = false;
-        control.requested_clip = clip;
+        control.requested_clip_name = clip_name.to_owned();
         control.paused = false;
     }))
+}
+
+fn build_metadata_default() -> Scenario {
+    Scenario::builder("vat_metadata_default")
+        .description(
+            "Verify the hero boots on the metadata-declared default clip without any explicit numeric clip selection.",
+        )
+        .then(Action::WaitFrames(12))
+        .then(assertions::resource_satisfies::<LabDiagnostics>(
+            "hero started on metadata default clip",
+            |diagnostics| diagnostics.hero_clip_name == "idle" && diagnostics.hero_playing,
+        ))
+        .then(Action::Screenshot("vat_metadata_default".into()))
+        .then(assertions::log_summary("vat_metadata_default summary"))
+        .build()
 }
 
 fn build_smoke() -> Scenario {
@@ -63,19 +80,19 @@ fn build_multi_clip() -> Scenario {
             "Force the one-shot burst clip, assert the hero changes clips and emits at least one event, then capture the burst and the return.",
         )
         .then(Action::WaitFrames(20))
-        .then(request_clip(2))
+        .then(request_clip_name("burst"))
         .then(Action::WaitUntil {
             label: "hero entered burst clip".into(),
             condition: Box::new(|world: &World| {
                 world
                     .get_resource::<LabDiagnostics>()
-                    .is_some_and(|diagnostics| diagnostics.hero_clip == 2)
+                    .is_some_and(|diagnostics| diagnostics.hero_clip_name == "burst")
             }),
             max_frames: 90,
         })
         .then(assertions::resource_satisfies::<LabDiagnostics>(
             "hero switched to burst clip",
-            |diagnostics| diagnostics.hero_clip == 2,
+            |diagnostics| diagnostics.hero_clip_name == "burst",
         ))
         .then(Action::Screenshot("vat_multi_clip_burst".into()))
         .then(Action::WaitUntil {
@@ -87,7 +104,7 @@ fn build_multi_clip() -> Scenario {
             }),
             max_frames: 120,
         })
-        .then(request_clip(0))
+        .then(request_clip_name("idle"))
         .then(Action::WaitFrames(20))
         .then(Action::Screenshot("vat_multi_clip_idle".into()))
         .then(assertions::log_summary("vat_multi_clip summary"))
@@ -159,7 +176,7 @@ fn build_crossfade() -> Scenario {
             "Trigger a hero crossfade, assert the transition becomes active and then resolves, and capture entry and mid-transition screenshots.",
         )
         .then(Action::WaitFrames(20))
-        .then(request_clip(1))
+        .then(request_clip_name("gust"))
         .then(Action::WaitUntil {
             label: "crossfade became active".into(),
             condition: Box::new(|world: &World| {
@@ -181,13 +198,15 @@ fn build_crossfade() -> Scenario {
             condition: Box::new(|world: &World| {
                 world
                     .get_resource::<LabDiagnostics>()
-                    .is_some_and(|diagnostics| !diagnostics.crossfade_active && diagnostics.hero_clip == 1)
+                    .is_some_and(|diagnostics| {
+                        !diagnostics.crossfade_active && diagnostics.hero_clip_name == "gust"
+                    })
             }),
             max_frames: 90,
         })
         .then(assertions::resource_satisfies::<LabDiagnostics>(
             "hero reached gust clip",
-            |diagnostics| !diagnostics.crossfade_active && diagnostics.hero_clip == 1,
+            |diagnostics| !diagnostics.crossfade_active && diagnostics.hero_clip_name == "gust",
         ))
         .then(assertions::log_summary("vat_crossfade summary"))
         .build()

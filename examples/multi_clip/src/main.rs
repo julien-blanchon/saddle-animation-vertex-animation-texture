@@ -18,14 +18,14 @@ struct Overlay;
 #[derive(Resource)]
 struct ClipCycle {
     timer: Timer,
-    current_index: usize,
+    next_clip_name: &'static str,
 }
 
 fn main() {
     let mut app = demo_app("vertex_animation_texture multi clip");
     app.insert_resource(ClipCycle {
         timer: Timer::from_seconds(2.5, TimerMode::Repeating),
-        current_index: 0,
+        next_clip_name: support::DEMO_CLIP_GUST,
     });
     app.add_systems(Startup, setup);
     app.add_systems(Update, (spin_demo_lights, cycle_clips, update_overlay));
@@ -74,45 +74,78 @@ fn setup(
 fn cycle_clips(
     time: Res<Time>,
     mut cycle: ResMut<ClipCycle>,
-    query: Query<(Entity, &VatPlayback, Option<&VatCrossfade>), With<ClipShowcase>>,
+    animations: Res<Assets<saddle_animation_vertex_animation_texture::VatAnimationData>>,
+    query: Query<
+        (
+            Entity,
+            &VatPlayback,
+            &saddle_animation_vertex_animation_texture::VatAnimationSource,
+            Option<&VatCrossfade>,
+        ),
+        With<ClipShowcase>,
+    >,
     mut commands: Commands,
 ) {
     if !cycle.timer.tick(time.delta()).just_finished() {
         return;
     }
 
-    let Ok((entity, playback, crossfade)) = query.single() else {
+    let Ok((entity, playback, source, crossfade)) = query.single() else {
         return;
     };
     if crossfade.is_some() {
         return;
     }
 
-    let next_clip = (cycle.current_index + 1) % 3;
-    commands
-        .entity(entity)
-        .insert(VatCrossfade::new(playback.active_clip, next_clip, 0.6));
-    cycle.current_index = next_clip;
+    let Some(animation) = animations.get(&source.animation) else {
+        return;
+    };
+    if let Ok(crossfade) =
+        VatCrossfade::to_clip_name(animation, playback, cycle.next_clip_name, 0.6)
+    {
+        commands.entity(entity).insert(crossfade);
+        cycle.next_clip_name = next_demo_clip_name(Some(cycle.next_clip_name));
+    }
 }
 
 fn update_overlay(
     mut overlay: Query<&mut Text, With<Overlay>>,
-    showcase: Query<(&VatPlayback, Option<&VatCrossfade>), With<ClipShowcase>>,
+    showcase: Query<
+        (
+            &VatPlayback,
+            &saddle_animation_vertex_animation_texture::VatAnimationSource,
+            Option<&VatCrossfade>,
+        ),
+        With<ClipShowcase>,
+    >,
     cycle: Res<ClipCycle>,
+    animations: Res<Assets<saddle_animation_vertex_animation_texture::VatAnimationData>>,
 ) {
     let Ok(mut text) = overlay.single_mut() else {
         return;
     };
-    let (playback, crossfade) = showcase.single().unwrap();
+    let (playback, source, crossfade) = showcase.single().unwrap();
+    let active_clip_name = animations
+        .get(&source.animation)
+        .and_then(|animation| playback.active_clip_name(animation))
+        .unwrap_or("resolving");
     write_overlay(
         &mut text,
         "VAT Multi Clip",
         &format!(
-            "Auto-cycles through 3 clips with crossfade.\nClips share a single baked VAT texture.\n\nactive clip: {} (cycling to: {})\ntime: {:.2}  crossfading: {}\n\nCrossfade blends two clips in the vertex\nshader — no CPU skinning overhead.",
-            playback.active_clip,
-            cycle.current_index,
+            "Auto-cycles through named clips with crossfade.\nClips share a single baked VAT texture.\n\nactive clip: {}  next clip: {}\ntime: {:.2}  crossfading: {}\n\nCrossfade blends two clips in the vertex\nshader with metadata-resolved clip names.",
+            active_clip_name,
+            cycle.next_clip_name,
             playback.time_seconds,
             crossfade.is_some(),
         ),
     );
+}
+
+fn next_demo_clip_name(current: Option<&str>) -> &'static str {
+    match current {
+        Some(support::DEMO_CLIP_IDLE) => support::DEMO_CLIP_GUST,
+        Some(support::DEMO_CLIP_GUST) => support::DEMO_CLIP_BURST,
+        _ => support::DEMO_CLIP_IDLE,
+    }
 }

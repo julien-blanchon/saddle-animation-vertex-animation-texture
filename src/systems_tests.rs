@@ -24,6 +24,7 @@ fn sample_animation_for_events() -> VatAnimationData {
         decode_bounds_max: Vec3::splat(1.0),
         animation_bounds_min: Vec3::splat(-1.0),
         animation_bounds_max: Vec3::splat(1.0),
+        default_clip: Some("test".into()),
         clips: vec![VatClip {
             name: "test".into(),
             start_frame: 0,
@@ -121,6 +122,38 @@ fn crossfade_weight_progresses_linearly() {
     let mut crossfade = crate::VatCrossfade::new(0, 1, 0.6);
     crossfade.elapsed = 0.3;
     assert_abs_diff_eq!(crossfade.weight(), 0.5, epsilon = 0.0001);
+}
+
+#[test]
+fn default_playback_prefers_metadata_default_clip() {
+    let animation = demo_animation();
+    let resolved = animation
+        .resolve_clip_selection(&crate::VatClipSelection::MetadataDefault)
+        .expect("demo metadata should expose a default clip");
+    assert_eq!(resolved, 0);
+}
+
+#[test]
+fn playback_can_resolve_named_clip() {
+    let animation = demo_animation();
+    let mut playback = crate::VatPlayback::default();
+    let clip_index = playback
+        .play_clip_named(&animation, "gust")
+        .expect("named playback helper should resolve");
+
+    assert_eq!(clip_index, 1);
+    assert_eq!(playback.active_clip, Some(1));
+    assert_eq!(playback.active_clip_name(&animation), Some("gust"));
+}
+
+#[test]
+fn crossfade_can_be_built_from_clip_names() {
+    let animation = demo_animation();
+    let crossfade = crate::VatCrossfade::between_clip_names(&animation, "idle", "burst", 0.6)
+        .expect("named crossfade helper should resolve");
+
+    assert_eq!(crossfade.from_clip, 0);
+    assert_eq!(crossfade.to_clip, 2);
 }
 
 #[test]

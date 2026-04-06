@@ -44,7 +44,7 @@ fn setup(
         Mesh3d(mesh),
         VatAnimationSource::new(metadata),
         VatPlayback::default()
-            .with_clip(0)         // play first clip
+            .with_clip_name("idle") // or omit this and use metadata default_clip
             .with_speed(1.0),     // normal speed
     ));
 }
@@ -71,8 +71,8 @@ System sets:
 Consumer-facing components:
 
 - `VatAnimationSource` — links an entity to its VAT metadata asset
-- `VatPlayback` — playback state: clip index, time, speed, loop mode, play/pause
-- `VatCrossfade` — request a smooth blend between two clips
+- `VatPlayback` — playback state: resolved clip index, startup clip selection, time, speed, loop mode, play/pause
+- `VatCrossfade` — request a smooth blend between two clips (named helpers included)
 - `VatPlaybackFollower` — mirror a leader entity's playback for modular multi-mesh actors
 - `VatPlaybackTweaks` — per-entity options (e.g., disable frame interpolation)
 - `VatAnimationBundle` — convenience bundle for `VatAnimationSource` + `VatPlayback`
@@ -130,9 +130,9 @@ VatPlaybackTweaks { disable_interpolation: true }
 Blend between clips in the vertex shader:
 
 ```rust
-commands.entity(entity).insert(
-    VatCrossfade::new(0, 2, 0.5) // from clip 0 to clip 2 over 0.5s
-);
+let crossfade = VatCrossfade::between_clip_names(&animation, "idle", "burst", 0.5)
+    .expect("clip names should exist in metadata");
+commands.entity(entity).insert(crossfade);
 ```
 
 The system captures source state, switches to the target clip, blends in the shader, and cleans up when the crossfade completes.
@@ -229,11 +229,11 @@ cargo run -p saddle-animation-vertex-animation-texture-example-debug-lab
 
 | Example | Description |
 |---|---|
-| **basic** | Single VAT mesh with pane controls for speed, clip, and interpolation |
-| **crowd** | 54 independently animated instances sharing one material |
-| **multi_clip** | Auto-cycling through 3 clips with shader-side crossfade |
-| **modular_sync** | Leader/follower sync with configurable time offsets |
-| **debug_lab** | Interactive controls: 1/2/3 switch clips, Space pause, I toggle interpolation |
+| **basic** | Single VAT mesh using the metadata default clip, with pane controls for speed and interpolation |
+| **crowd** | 54 independently animated instances sharing one material, assigned to named metadata clips |
+| **multi_clip** | Auto-cycles through named clips with shader-side crossfade helpers |
+| **modular_sync** | Leader/follower sync using named startup clips and configurable time offsets |
+| **debug_lab** | Interactive controls: `1` idle, `2` gust, `3` burst, `Space` pause, `I` toggle interpolation |
 
 Crate-local lab:
 

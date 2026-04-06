@@ -20,6 +20,9 @@ pub const DEMO_COLUMNS: usize = 8;
 pub const DEMO_ROWS: usize = 8;
 pub const DEMO_FRAMES_PER_CLIP: usize = 24;
 pub const DEMO_FRAME_COUNT: usize = 72;
+pub const DEMO_CLIP_IDLE: &str = "idle";
+pub const DEMO_CLIP_GUST: &str = "gust";
+pub const DEMO_CLIP_BURST: &str = "burst";
 
 #[derive(Clone)]
 pub struct VatDemoAssets {
@@ -56,8 +59,6 @@ pub struct VatExamplePane {
     pub crossfade_duration: f32,
     #[pane(slider, min = -0.8, max = 0.8, step = 0.05)]
     pub follower_offset_seconds: f32,
-    #[pane(slider, min = 0.0, max = 2.0, step = 1.0)]
-    pub clip_index: i32,
     #[pane(monitor)]
     pub actor_count: u32,
     #[pane(monitor)]
@@ -75,7 +76,6 @@ impl Default for VatExamplePane {
             scene_scale: 1.0,
             crossfade_duration: 0.45,
             follower_offset_seconds: 0.18,
-            clip_index: 0,
             actor_count: 0,
             active_crossfades: 0,
             leader_time_seconds: 0.0,
@@ -87,7 +87,6 @@ impl Default for VatExamplePane {
 pub struct VatPaneControlled {
     pub base_speed: f32,
     pub base_scale: Vec3,
-    pub sync_clip: bool,
 }
 
 impl VatPaneControlled {
@@ -96,14 +95,7 @@ impl VatPaneControlled {
         Self {
             base_speed,
             base_scale,
-            sync_clip: false,
         }
-    }
-
-    #[must_use]
-    pub fn with_clip_sync(mut self) -> Self {
-        self.sync_clip = true;
-        self
     }
 }
 
@@ -314,7 +306,6 @@ pub fn spin_demo_lights(time: Res<Time>, mut query: Query<(&DemoSpinner, &mut Tr
 
 pub fn sync_vat_pane(
     pane: Res<VatExamplePane>,
-    mut commands: Commands,
     mut query: Query<(
         Entity,
         &VatPaneControlled,
@@ -325,8 +316,7 @@ pub fn sync_vat_pane(
         Option<&VatFollowerOffsetScale>,
     )>,
 ) {
-    let requested_clip = pane.clip_index.max(0) as usize;
-    for (entity, control, mut playback, mut tweaks, mut transform, follower, follower_scale) in
+    for (_entity, control, mut playback, mut tweaks, mut transform, follower, follower_scale) in
         &mut query
     {
         playback.playing = pane.playing;
@@ -337,14 +327,6 @@ pub fn sync_vat_pane(
         if let Some(mut follower) = follower {
             let scale = follower_scale.map_or(1.0, |scale| scale.0);
             follower.time_offset_seconds = pane.follower_offset_seconds * scale;
-        }
-
-        if control.sync_clip && playback.active_clip != requested_clip {
-            commands.entity(entity).insert(VatCrossfade::new(
-                playback.active_clip,
-                requested_clip,
-                pane.crossfade_duration.max(0.05),
-            ));
         }
     }
 }

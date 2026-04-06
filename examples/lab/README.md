@@ -24,6 +24,7 @@ cargo run -p saddle-animation-vertex-animation-texture-lab --features e2e -- vat
 
 Available scenarios:
 
+- `vat_metadata_default`
 - `vat_smoke`
 - `vat_multi_clip`
 - `vat_crowd`

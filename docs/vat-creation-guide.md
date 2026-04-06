@@ -327,7 +327,7 @@ fn setup(
         // MeshMaterial3d(materials.add(material)),
         VatAnimationSource::new(metadata),
         VatPlayback::default()
-            .with_clip(0)
+            .with_clip_name("idle")
             .with_speed(1.0),
     ));
 }
@@ -464,6 +464,7 @@ Frame 48–71:  attack
 Define clips in the metadata JSON:
 
 ```json
+"default_clip": "idle",
 "clips": [
   { "name": "idle",   "start_frame": 0,  "end_frame": 23, "default_loop_mode": "loop" },
   { "name": "walk",   "start_frame": 24, "end_frame": 47, "default_loop_mode": "loop" },
@@ -474,13 +475,13 @@ Define clips in the metadata JSON:
 Switch clips at runtime:
 
 ```rust
-// Instant switch
-playback.active_clip = 1; // switch to "walk"
+// Instant switch by name
+playback.play_clip_named(&animation, "walk")?;
 playback.time_seconds = 0.0;
 
-// Smooth crossfade
+// Smooth crossfade by name
 commands.entity(entity).insert(
-    VatCrossfade::new(0, 1, 0.3) // fade from clip 0 to clip 1 over 0.3s
+    VatCrossfade::between_clip_names(&animation, "idle", "walk", 0.3)?
 );
 ```
 
@@ -520,9 +521,9 @@ commands.entity(entity).insert(VatPlaybackTweaks {
 Crossfade blends two clips simultaneously during a transition:
 
 ```rust
-// Currently playing clip 0, crossfade to clip 2 over 0.5 seconds
+// Currently playing "idle", crossfade to "attack" over 0.5 seconds
 commands.entity(entity).insert(
-    VatCrossfade::new(0, 2, 0.5)
+    VatCrossfade::to_clip_name(&animation, &playback, "attack", 0.5)?
 );
 // The system handles everything: captures source state, switches active clip,
 // blends in the shader, cleans up when done.

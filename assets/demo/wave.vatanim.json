@@ -12,6 +12,7 @@
     "min": [-0.9, -0.1, -0.45],
     "max": [0.9, 1.8, 0.45]
   },
+  "default_clip": "idle",
   "clips": [
     {
       "name": "idle",

@@ -96,6 +96,8 @@ struct RawCanonicalVatMetadata {
     seconds_per_frame: Option<f32>,
     decode_bounds: RawBounds,
     animation_bounds: Option<RawBounds>,
+    #[serde(default)]
+    default_clip: Option<String>,
     clips: Vec<RawClip>,
     position_texture: RawTexture,
     #[serde(default)]
@@ -166,6 +168,7 @@ impl RawCanonicalVatMetadata {
             decode_bounds_max: decode_bounds.1,
             animation_bounds_min: animation_bounds.0,
             animation_bounds_max: animation_bounds.1,
+            default_clip: self.default_clip,
             clips: self
                 .clips
                 .into_iter()
@@ -200,6 +203,8 @@ struct RawOpenVatMetadata {
     os_remap: RawOpenVatRemap,
     #[serde(default)]
     animations: BTreeMap<String, RawOpenVatClip>,
+    #[serde(default, alias = "default_animation")]
+    default_clip: Option<String>,
     vertex_count: Option<u32>,
     texture_width: Option<u32>,
     texture_height: Option<u32>,
@@ -275,6 +280,7 @@ impl RawOpenVatMetadata {
             decode_bounds_max: Vec3::from_array(self.os_remap.max),
             animation_bounds_min: Vec3::from_array(self.os_remap.min),
             animation_bounds_max: Vec3::from_array(self.os_remap.max),
+            default_clip: self.default_clip,
             clips,
             position_texture: VatTextureDescriptor {
                 relative_path: None,

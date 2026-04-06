@@ -108,7 +108,7 @@ fn setup(
             MeshMaterial3d(material),
             VatAnimationSource::new(animation_handle),
             VatPlaybackTweaks::default(),
-            VatPaneControlled::new(1.0, scale).with_clip_sync(),
+            VatPaneControlled::new(1.0, scale),
             VatPlayback::default(),
             Transform::from_translation(Vec3::ZERO).with_scale(scale),
         ))
@@ -121,16 +121,27 @@ fn setup(
     commands.entity(overlay).insert(Overlay);
 }
 
-fn update_overlay(mut overlay: Query<&mut Text, With<Overlay>>, actor: Single<&VatPlayback>) {
+fn update_overlay(
+    mut overlay: Query<&mut Text, With<Overlay>>,
+    actor: Single<(
+        &VatPlayback,
+        &saddle_animation_vertex_animation_texture::VatAnimationSource,
+    )>,
+    animations: Res<Assets<VatAnimationData>>,
+) {
     let Ok(mut text) = overlay.single_mut() else {
         return;
     };
+    let clip_name = animations
+        .get(&actor.1.animation)
+        .and_then(|animation| actor.0.active_clip_name(animation))
+        .unwrap_or("resolving");
     support::write_overlay(
         &mut text,
         "VAT Basic",
         &format!(
-            "Single soft-body VAT mesh with GPU-driven\nvertex deformation from baked textures.\n\nclip: {}  time: {:.2}  speed: {:.1}\n\nUse the pane (top-right) to adjust:\n  speed, interpolation, scale, clip",
-            actor.active_clip, actor.time_seconds, actor.speed,
+            "Single soft-body VAT mesh with GPU-driven\nvertex deformation from baked textures.\n\nstartup clip comes from metadata.\nclip: {}  time: {:.2}  speed: {:.1}\n\nUse the pane (top-right) to adjust:\n  speed, interpolation, scale",
+            clip_name, actor.0.time_seconds, actor.0.speed,
         ),
     );
 }

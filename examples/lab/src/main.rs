@@ -38,7 +38,7 @@ struct Overlay;
 #[allow(dead_code)]
 pub struct LabControl {
     pub auto: bool,
-    pub requested_clip: usize,
+    pub requested_clip_name: String,
     pub interpolation_enabled: bool,
     pub paused: bool,
 }
@@ -47,7 +47,7 @@ impl Default for LabControl {
     fn default() -> Self {
         Self {
             auto: true,
-            requested_clip: 0,
+            requested_clip_name: support::DEMO_CLIP_IDLE.into(),
             interpolation_enabled: true,
             paused: false,
         }
@@ -58,6 +58,7 @@ impl Default for LabControl {
 #[reflect(Resource)]
 pub struct LabDiagnostics {
     pub hero_clip: usize,
+    pub hero_clip_name: String,
     pub hero_time: f32,
     pub hero_playing: bool,
     pub event_count: u32,
@@ -164,7 +165,9 @@ fn setup(
         &mut commands,
         "Bounds Probe",
         &assets,
-        VatPlayback::default().with_clip(1).with_time_seconds(0.2),
+        VatPlayback::default()
+            .with_clip_name(support::DEMO_CLIP_GUST)
+            .with_time_seconds(0.2),
         Vec3::new(2.2, 0.0, -0.4),
         Vec3::splat(2.1),
     );
@@ -178,7 +181,11 @@ fn setup(
                 &format!("Crowd Member {}", seed + 1),
                 &assets,
                 VatPlayback::default()
-                    .with_clip(if seed % 4 == 0 { 1 } else { 0 })
+                    .with_clip_name(if seed % 4 == 0 {
+                        support::DEMO_CLIP_GUST
+                    } else {
+                        support::DEMO_CLIP_IDLE
+                    })
                     .with_speed(0.85 + (seed % 5) as f32 * 0.09)
                     .with_time_seconds((seed as f32 * 0.111).fract()),
                 Vec3::new(column as f32 * 0.78 - 2.1, 0.0, row as f32 * 0.65 + 1.1),
@@ -198,12 +205,12 @@ fn drive_auto_mode(time: Res<Time>, mut control: ResMut<LabControl>) {
     }
 
     let phase = time.elapsed_secs().rem_euclid(7.0);
-    control.requested_clip = if phase < 2.2 {
-        0
+    control.requested_clip_name = if phase < 2.2 {
+        support::DEMO_CLIP_IDLE.into()
     } else if phase < 4.6 {
-        1
+        support::DEMO_CLIP_GUST.into()
     } else {
-        2
+        support::DEMO_CLIP_BURST.into()
     };
     control.paused = false;
 }
@@ -219,24 +226,26 @@ fn handle_manual_input(keys: Res<ButtonInput<KeyCode>>, mut control: ResMut<LabC
     }
     if keys.just_pressed(KeyCode::Digit1) {
         control.auto = false;
-        control.requested_clip = 0;
+        control.requested_clip_name = support::DEMO_CLIP_IDLE.into();
     }
     if keys.just_pressed(KeyCode::Digit2) {
         control.auto = false;
-        control.requested_clip = 1;
+        control.requested_clip_name = support::DEMO_CLIP_GUST.into();
     }
     if keys.just_pressed(KeyCode::Digit3) {
         control.auto = false;
-        control.requested_clip = 2;
+        control.requested_clip_name = support::DEMO_CLIP_BURST.into();
     }
 }
 
 fn apply_control(
+    animations: Res<Assets<saddle_animation_vertex_animation_texture::VatAnimationData>>,
     mut commands: Commands,
     control: Res<LabControl>,
     mut hero: Single<
         (
             Entity,
+            &saddle_animation_vertex_animation_texture::VatAnimationSource,
             &mut VatPlayback,
             &mut VatPlaybackTweaks,
             Option<&VatCrossfade>,
@@ -244,15 +253,16 @@ fn apply_control(
         With<Hero>,
     >,
 ) {
-    hero.1.playing = !control.paused;
-    hero.2.disable_interpolation = !control.interpolation_enabled;
+    hero.2.playing = !control.paused;
+    hero.3.disable_interpolation = !control.interpolation_enabled;
 
-    if hero.1.active_clip != control.requested_clip && hero.3.is_none() {
-        commands.entity(hero.0).insert(VatCrossfade::new(
-            hero.1.active_clip,
-            control.requested_clip,
-            0.5,
-        ));
+    if hero.4.is_none()
+        && let Some(animation) = animations.get(&hero.1.animation)
+        && hero.2.active_clip_name(animation) != Some(control.requested_clip_name.as_str())
+        && let Ok(crossfade) =
+            VatCrossfade::to_clip_name(animation, &hero.2, &control.requested_clip_name, 0.5)
+    {
+        commands.entity(hero.0).insert(crossfade);
     }
 }
 
@@ -272,15 +282,28 @@ fn record_messages(
 
 fn refresh_diagnostics(
     mut diagnostics: ResMut<LabDiagnostics>,
-    hero: Single<(&VatPlayback, Option<&VatCrossfade>), With<Hero>>,
+    hero: Single<
+        (
+            &VatPlayback,
+            &saddle_animation_vertex_animation_texture::VatAnimationSource,
+            Option<&VatCrossfade>,
+        ),
+        With<Hero>,
+    >,
     crowd: Query<&VatPlayback, With<CrowdMember>>,
     followers: Query<(&VatPlaybackFollower, &VatPlayback), With<HeroFollower>>,
     probe_visibility: Single<&ViewVisibility, With<BoundsProbe>>,
+    animations: Res<Assets<saddle_animation_vertex_animation_texture::VatAnimationData>>,
 ) {
-    diagnostics.hero_clip = hero.0.active_clip;
+    diagnostics.hero_clip = hero.0.active_clip.unwrap_or_default();
+    diagnostics.hero_clip_name = animations
+        .get(&hero.1.animation)
+        .and_then(|animation| hero.0.active_clip_name(animation))
+        .unwrap_or("resolving")
+        .to_owned();
     diagnostics.hero_time = hero.0.time_seconds;
     diagnostics.hero_playing = hero.0.playing;
-    diagnostics.crossfade_active = hero.1.is_some();
+    diagnostics.crossfade_active = hero.2.is_some();
     diagnostics.bounds_probe_visible = probe_visibility.get();
 
     let mut min_time = f32::MAX;
@@ -317,7 +340,8 @@ fn update_overlay(
         &mut text,
         "VAT crate-local lab",
         &format!(
-            "hero clip: {}\nhero time: {:.2}\nplaying: {}\ninterpolation: {}\nlast event: {}\nfinishes: {}\ncrowd span: {:.2}\nfollowers: {} (max sync error {:.3})\nbounds probe visible: {}\ncrossfade active: {}\n\nauto: {}\nkeys: 1/2/3 clips, Space pause, I interpolation",
+            "hero clip: {} (# {})\nhero time: {:.2}\nplaying: {}\ninterpolation: {}\nlast event: {}\nfinishes: {}\ncrowd span: {:.2}\nfollowers: {} (max sync error {:.3})\nbounds probe visible: {}\ncrossfade active: {}\n\nauto: {}\nkeys: 1 idle, 2 gust, 3 burst, Space pause, I interpolation",
+            diagnostics.hero_clip_name,
             diagnostics.hero_clip,
             diagnostics.hero_time,
             diagnostics.hero_playing,

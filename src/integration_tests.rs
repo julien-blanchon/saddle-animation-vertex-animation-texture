@@ -49,6 +49,7 @@ fn make_animation(vertex_count: u32) -> VatAnimationData {
         decode_bounds_max: Vec3::new(1.0, 1.0, 0.25),
         animation_bounds_min: Vec3::new(-1.0, 0.0, -0.25),
         animation_bounds_max: Vec3::new(1.0, 1.0, 0.25),
+        default_clip: Some("loop".into()),
         clips: vec![VatClip {
             name: "loop".into(),
             start_frame: 0,
@@ -282,6 +283,7 @@ fn follower_entities_sync_to_their_leader() {
             events: Vec::new(),
         },
     ];
+    animation.default_clip = Some("surge".into());
     let (position_texture, normal_texture) = make_textures(4);
     let animation_handle = app
         .world_mut()
@@ -350,10 +352,109 @@ fn follower_entities_sync_to_their_leader() {
         (leader_playback, follower_playback)
     };
 
-    assert_eq!(leader_playback.active_clip, 1);
+    assert_eq!(leader_playback.active_clip, Some(1));
     assert_eq!(follower_playback.active_clip, leader_playback.active_clip);
     assert!((follower_playback.time_seconds - 0.35).abs() <= 0.0001);
     assert_eq!(follower_playback.playing, leader_playback.playing);
+}
+
+#[test]
+fn default_playback_uses_metadata_default_clip() {
+    let mut app = test_app();
+    app.add_plugins(VertexAnimationTexturePlugin::new(
+        TestActivate,
+        TestDeactivate,
+        TestUpdate,
+    ));
+
+    let mut animation = make_animation(4);
+    animation.clips = vec![
+        VatClip {
+            name: "idle".into(),
+            start_frame: 0,
+            end_frame: 3,
+            default_loop_mode: Some(crate::VatLoopMode::Loop),
+            events: Vec::new(),
+        },
+        VatClip {
+            name: "surge".into(),
+            start_frame: 4,
+            end_frame: 7,
+            default_loop_mode: Some(crate::VatLoopMode::Loop),
+            events: Vec::new(),
+        },
+    ];
+    animation.default_clip = Some("surge".into());
+
+    let animation_handle = app
+        .world_mut()
+        .resource_mut::<Assets<VatAnimationData>>()
+        .add(animation);
+    let entity = app
+        .world_mut()
+        .spawn((
+            VatAnimationSource::new(animation_handle),
+            VatPlayback::default(),
+        ))
+        .id();
+
+    app.world_mut().run_schedule(TestActivate);
+    app.world_mut().run_schedule(TestUpdate);
+
+    assert_eq!(
+        app.world().get::<VatPlayback>(entity).unwrap().active_clip,
+        Some(1)
+    );
+}
+
+#[test]
+fn invalid_playback_clip_falls_back_to_startup_selection() {
+    let mut app = test_app();
+    app.add_plugins(VertexAnimationTexturePlugin::new(
+        TestActivate,
+        TestDeactivate,
+        TestUpdate,
+    ));
+
+    let mut animation = make_animation(4);
+    animation.clips = vec![
+        VatClip {
+            name: "idle".into(),
+            start_frame: 0,
+            end_frame: 3,
+            default_loop_mode: Some(crate::VatLoopMode::Loop),
+            events: Vec::new(),
+        },
+        VatClip {
+            name: "surge".into(),
+            start_frame: 4,
+            end_frame: 7,
+            default_loop_mode: Some(crate::VatLoopMode::Loop),
+            events: Vec::new(),
+        },
+    ];
+    animation.default_clip = Some("idle".into());
+
+    let animation_handle = app
+        .world_mut()
+        .resource_mut::<Assets<VatAnimationData>>()
+        .add(animation);
+    let mut playback = VatPlayback::default()
+        .with_clip_name("surge")
+        .with_invalid_clip_fallback(crate::VatInvalidClipFallback::StartupClipThenFirstValid);
+    playback.active_clip = Some(99);
+    let entity = app
+        .world_mut()
+        .spawn((VatAnimationSource::new(animation_handle), playback))
+        .id();
+
+    app.world_mut().run_schedule(TestActivate);
+    app.world_mut().run_schedule(TestUpdate);
+
+    assert_eq!(
+        app.world().get::<VatPlayback>(entity).unwrap().active_clip,
+        Some(1)
+    );
 }
 
 #[test]

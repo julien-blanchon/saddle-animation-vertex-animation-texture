@@ -7,7 +7,8 @@ use bevy::{
 
 use crate::{
     VatAnimationData, VatAnimationSource, VatBoundsMode, VatClipFinished, VatCrossfade,
-    VatEventReached, VatLoopMode, VatMaterial, VatPlayback, VatPlaybackFollower, VatPlaybackTweaks,
+    VatEventReached, VatInvalidClipFallback, VatLoopMode, VatMaterial, VatPlayback,
+    VatPlaybackFollower, VatPlaybackTweaks,
     material::VatGpuInstance,
     validation::{VatMeshValidationError, metadata_aabb, should_disable_frustum_culling},
 };
@@ -20,7 +21,7 @@ pub(crate) struct VatRuntimeState {
 #[derive(Component, Debug)]
 pub(crate) struct VatPlaybackRuntime {
     pub direction: f32,
-    pub last_clip_index: usize,
+    pub last_clip_index: Option<usize>,
     pub pending_events: Vec<PendingEvent>,
     pub pending_finishes: Vec<PendingFinish>,
 }
@@ -29,7 +30,7 @@ impl Default for VatPlaybackRuntime {
     fn default() -> Self {
         Self {
             direction: 1.0,
-            last_clip_index: 0,
+            last_clip_index: None,
             pending_events: Vec::new(),
             pending_finishes: Vec::new(),
         }
@@ -91,6 +92,89 @@ struct LeaderSyncSnapshot {
     crossfade_runtime: Option<VatCrossfadeRuntime>,
 }
 
+fn resolve_invalid_clip_fallback(
+    animation: &VatAnimationData,
+    playback: &VatPlayback,
+    runtime: &VatPlaybackRuntime,
+) -> Option<usize> {
+    match playback.invalid_clip_fallback {
+        VatInvalidClipFallback::StartupClipThenFirstValid => animation
+            .resolve_clip_selection(&playback.startup_clip)
+            .ok()
+            .or_else(|| animation.clips.first().map(|_| 0)),
+        VatInvalidClipFallback::FirstValid => animation.clips.first().map(|_| 0),
+        VatInvalidClipFallback::KeepCurrent => runtime
+            .last_clip_index
+            .filter(|clip_index| animation.clip(*clip_index).is_some()),
+    }
+}
+
+fn resolve_playback_clip(
+    entity: Entity,
+    animation: &VatAnimationData,
+    playback: &mut VatPlayback,
+    runtime: &VatPlaybackRuntime,
+) -> Option<usize> {
+    let requested_clip = playback.active_clip.map_or_else(
+        || animation.resolve_clip_selection(&playback.startup_clip),
+        |clip_index| animation.resolve_clip_selection(&crate::VatClipSelection::Index(clip_index)),
+    );
+
+    match requested_clip {
+        Ok(clip_index) => {
+            playback.active_clip = Some(clip_index);
+            Some(clip_index)
+        }
+        Err(error) => {
+            let fallback = resolve_invalid_clip_fallback(animation, playback, runtime);
+            if let Some(clip_index) = fallback {
+                let clip_name = animation
+                    .clip(clip_index)
+                    .map_or("<unknown>", |clip| clip.name.as_str());
+                warn!(
+                    "VAT entity {:?} could not resolve playback clip ({}). Falling back to '{}' (#{} ) with {:?}",
+                    entity, error, clip_name, clip_index, playback.invalid_clip_fallback,
+                );
+                playback.active_clip = Some(clip_index);
+                Some(clip_index)
+            } else {
+                error!(
+                    "VAT entity {:?} could not resolve playback clip ({}) and no fallback clip was available",
+                    entity, error
+                );
+                playback.active_clip = None;
+                None
+            }
+        }
+    }
+}
+
+fn validate_crossfade_request(
+    entity: Entity,
+    animation: &VatAnimationData,
+    crossfade: &VatCrossfade,
+) -> Option<(usize, usize)> {
+    if animation.clip(crossfade.from_clip).is_none() {
+        warn!(
+            "VAT entity {:?} requested crossfade source clip {} but metadata only has {} clips; dropping crossfade",
+            entity,
+            crossfade.from_clip,
+            animation.clips.len(),
+        );
+        return None;
+    }
+    if animation.clip(crossfade.to_clip).is_none() {
+        warn!(
+            "VAT entity {:?} requested crossfade target clip {} but metadata only has {} clips; dropping crossfade",
+            entity,
+            crossfade.to_clip,
+            animation.clips.len(),
+        );
+        return None;
+    }
+    Some((crossfade.from_clip, crossfade.to_clip))
+}
+
 pub(crate) fn activate_runtime(mut runtime: ResMut<VatRuntimeState>) {
     runtime.active = true;
 }
@@ -142,21 +226,18 @@ pub(crate) fn advance_playback(
         if follower.is_some() {
             continue;
         }
-        let Some(active_clip) = animation.clip(playback.active_clip) else {
-            error!(
-                "VAT entity {:?} requested clip index {} but metadata only has {} clips",
-                entity,
-                playback.active_clip,
-                animation.clips.len()
-            );
-            playback.active_clip = 0;
-            runtime.last_clip_index = 0;
+        let Some(active_clip_index) =
+            resolve_playback_clip(entity, animation, &mut playback, &runtime)
+        else {
             continue;
         };
+        let active_clip = animation
+            .clip(active_clip_index)
+            .expect("resolved clip index should already be valid");
 
-        if runtime.last_clip_index != playback.active_clip {
+        if runtime.last_clip_index != Some(active_clip_index) {
             runtime.direction = 1.0;
-            runtime.last_clip_index = playback.active_clip;
+            runtime.last_clip_index = Some(active_clip_index);
             playback.time_seconds = playback
                 .time_seconds
                 .clamp(0.0, clip_duration_seconds(animation, active_clip));
@@ -184,7 +265,7 @@ pub(crate) fn advance_playback(
         let mut pending_finishes = Vec::new();
         enqueue_messages(
             animation,
-            playback.active_clip,
+            active_clip_index,
             &advance_result,
             &mut pending_events,
             &mut pending_finishes,
@@ -193,11 +274,18 @@ pub(crate) fn advance_playback(
         runtime.pending_finishes.extend(pending_finishes);
 
         if let Some(crossfade) = crossfade {
+            let Some((from_clip, to_clip)) =
+                validate_crossfade_request(entity, animation, crossfade)
+            else {
+                commands.entity(entity).remove::<VatCrossfade>();
+                commands.entity(entity).remove::<VatCrossfadeRuntime>();
+                continue;
+            };
             let mut crossfade_runtime = match crossfade_runtime {
                 Some(existing) => existing,
                 None => {
                     commands.entity(entity).insert(VatCrossfadeRuntime {
-                        source_clip: crossfade.from_clip,
+                        source_clip: from_clip,
                         source_time_seconds: playback.time_seconds,
                         source_direction: runtime.direction,
                     });
@@ -205,22 +293,20 @@ pub(crate) fn advance_playback(
                 }
             };
 
-            if crossfade_runtime.source_clip != crossfade.from_clip {
-                crossfade_runtime.source_clip = crossfade.from_clip;
+            if crossfade_runtime.source_clip != from_clip {
+                crossfade_runtime.source_clip = from_clip;
                 crossfade_runtime.source_time_seconds = playback.time_seconds;
                 crossfade_runtime.source_direction = runtime.direction;
             }
 
-            if playback.active_clip != crossfade.to_clip {
-                crossfade_runtime.source_clip = playback.active_clip;
+            if Some(to_clip) != playback.active_clip {
+                crossfade_runtime.source_clip = active_clip_index;
                 crossfade_runtime.source_time_seconds = playback.time_seconds;
                 crossfade_runtime.source_direction = runtime.direction;
-                playback.active_clip = crossfade
-                    .to_clip
-                    .min(animation.clips.len().saturating_sub(1));
+                playback.active_clip = Some(to_clip);
                 playback.time_seconds = 0.0;
                 runtime.direction = 1.0;
-                runtime.last_clip_index = playback.active_clip;
+                runtime.last_clip_index = Some(to_clip);
             }
 
             if let Some(source_clip) = animation.clip(crossfade_runtime.source_clip) {
@@ -302,13 +388,25 @@ pub(crate) fn sync_playback_followers(
             continue;
         }
 
-        playback.active_clip = leader.playback.active_clip.min(clip_count - 1);
+        playback.active_clip = leader.playback.active_clip;
         playback.playing = leader.playback.playing;
         if follower.mirror_loop_mode {
             playback.loop_mode = leader.playback.loop_mode;
         }
 
-        if let Some(active_clip) = animation.clip(playback.active_clip) {
+        let Some(active_clip_index) =
+            resolve_playback_clip(entity, animation, &mut playback, &runtime)
+        else {
+            if crossfade.is_some() {
+                commands.entity(entity).remove::<VatCrossfade>();
+            }
+            if crossfade_runtime.is_some() {
+                commands.entity(entity).remove::<VatCrossfadeRuntime>();
+            }
+            continue;
+        };
+
+        if let Some(active_clip) = animation.clip(active_clip_index) {
             let offset_seconds =
                 follower.time_offset_seconds * normalized_direction(leader.direction);
             let loop_mode = resolve_loop_mode(&playback, active_clip);
@@ -319,7 +417,7 @@ pub(crate) fn sync_playback_followers(
             );
         }
         runtime.direction = leader.direction;
-        runtime.last_clip_index = playback.active_clip;
+        runtime.last_clip_index = Some(active_clip_index);
         runtime.pending_events.clear();
         runtime.pending_finishes.clear();
 
@@ -329,8 +427,17 @@ pub(crate) fn sync_playback_followers(
 
         match (&leader.crossfade, leader.crossfade_runtime) {
             (Some(leader_crossfade), Some(leader_crossfade_runtime)) => {
-                let to_clip = leader_crossfade.to_clip.min(clip_count - 1);
-                let from_clip = leader_crossfade.from_clip.min(clip_count - 1);
+                let Some((from_clip, to_clip)) =
+                    validate_crossfade_request(entity, animation, leader_crossfade)
+                else {
+                    if crossfade.is_some() {
+                        commands.entity(entity).remove::<VatCrossfade>();
+                    }
+                    if crossfade_runtime.is_some() {
+                        commands.entity(entity).remove::<VatCrossfadeRuntime>();
+                    }
+                    continue;
+                };
                 if let Some(follower_crossfade) = crossfade.as_deref_mut() {
                     follower_crossfade.from_clip = from_clip;
                     follower_crossfade.to_clip = to_clip;
@@ -543,7 +650,10 @@ pub(crate) fn sync_gpu_state(
         let Some(animation) = animations.get(&source.animation) else {
             continue;
         };
-        let Some(active_clip) = animation.clip(playback.active_clip) else {
+        let Some(active_clip_index) = playback.active_clip else {
+            continue;
+        };
+        let Some(active_clip) = animation.clip(active_clip_index) else {
             continue;
         };
 
@@ -552,7 +662,7 @@ pub(crate) fn sync_gpu_state(
 
         let mut instance = sample_gpu_instance(
             animation,
-            playback.active_clip,
+            active_clip_index,
             playback.time_seconds,
             disable_interpolation,
             wrap_last_frame,

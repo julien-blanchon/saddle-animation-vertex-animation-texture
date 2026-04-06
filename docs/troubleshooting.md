@@ -148,6 +148,12 @@ The system detected a mismatch between the mesh and metadata. Common sub-errors:
 `VatPlayback.active_clip` is set to an index that doesn't exist. Clip indices are 0-based.
 With 3 clips, valid indices are 0, 1, 2.
 
+Preferred fixes:
+
+- Switch to `VatPlayback::with_clip_name(...)` or `play_clip_named(...)` so metadata resolves the clip by name.
+- Add `"default_clip": "..."` to metadata and let `VatPlayback::default()` resolve from metadata.
+- If numeric indices are unavoidable, set `VatPlayback::invalid_clip_fallback` explicitly so recovery behavior is deliberate.
+
 ## Performance Issues
 
 ### Low FPS with many VAT instances

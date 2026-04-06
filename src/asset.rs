@@ -1,6 +1,7 @@
 use bevy::prelude::*;
+use thiserror::Error;
 
-use crate::{VatLoopMode, validation::VatValidationError};
+use crate::{VatClipSelection, VatLoopMode, validation::VatValidationError};
 
 #[derive(Asset, Reflect, Clone, Debug, PartialEq)]
 pub struct VatAnimationData {
@@ -13,6 +14,7 @@ pub struct VatAnimationData {
     pub decode_bounds_max: Vec3,
     pub animation_bounds_min: Vec3,
     pub animation_bounds_max: Vec3,
+    pub default_clip: Option<String>,
     pub clips: Vec<VatClip>,
     pub position_texture: VatTextureDescriptor,
     pub normal_texture: VatNormalTexture,
@@ -40,6 +42,48 @@ impl VatAnimationData {
     }
 
     #[must_use]
+    pub fn default_clip_index(&self) -> Option<usize> {
+        self.default_clip
+            .as_deref()
+            .and_then(|clip_name| self.clip_index_by_name(clip_name))
+    }
+
+    pub fn resolve_clip_selection(
+        &self,
+        selection: &VatClipSelection,
+    ) -> Result<usize, VatClipResolveError> {
+        if self.clips.is_empty() {
+            return Err(VatClipResolveError::NoClips);
+        }
+
+        match selection {
+            VatClipSelection::MetadataDefault => {
+                self.default_clip_index()
+                    .ok_or_else(|| match self.default_clip.as_deref() {
+                        Some(clip_name) => VatClipResolveError::UnknownClipName {
+                            clip_name: clip_name.to_owned(),
+                        },
+                        None => VatClipResolveError::MissingMetadataDefaultClip,
+                    })
+            }
+            VatClipSelection::Index(clip_index) => self
+                .clip(*clip_index)
+                .map(|_| *clip_index)
+                .ok_or(VatClipResolveError::InvalidClipIndex {
+                    clip_index: *clip_index,
+                    clip_count: self.clips.len(),
+                }),
+            VatClipSelection::Name(clip_name) => {
+                self.clip_index_by_name(clip_name).ok_or_else(|| {
+                    VatClipResolveError::UnknownClipName {
+                        clip_name: clip_name.clone(),
+                    }
+                })
+            }
+        }
+    }
+
+    #[must_use]
     pub fn clip_duration_seconds(&self, clip_index: usize) -> Option<f32> {
         self.clip(clip_index)
             .map(|clip| clip.frame_count() as f32 / self.frames_per_second)
@@ -59,6 +103,23 @@ impl VatAnimationData {
     pub fn supports_v1_runtime(&self) -> bool {
         matches!(self.animation_mode, VatAnimationMode::SoftBodyFixedTopology)
     }
+}
+
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum VatClipResolveError {
+    #[error("metadata does not declare a default clip")]
+    MissingMetadataDefaultClip,
+    #[error("unknown clip name '{clip_name}'")]
+    UnknownClipName { clip_name: String },
+    #[error("clip index {clip_index} is invalid for metadata with {clip_count} clips")]
+    InvalidClipIndex {
+        clip_index: usize,
+        clip_count: usize,
+    },
+    #[error("playback has no resolved active clip yet")]
+    UnresolvedPlaybackClip,
+    #[error("metadata must define at least one clip")]
+    NoClips,
 }
 
 #[derive(Reflect, Clone, Debug, PartialEq)]

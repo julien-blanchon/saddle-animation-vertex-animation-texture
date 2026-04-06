@@ -18,7 +18,6 @@ struct DebugOverlay;
 
 #[derive(Resource, Default)]
 struct DebugState {
-    active_clip: usize,
     paused: bool,
     interpolation_enabled: bool,
     last_event: String,
@@ -75,14 +74,16 @@ fn setup(
     commands.entity(hero).insert((
         Hero,
         VatPlaybackTweaks::default(),
-        VatPaneControlled::new(1.0, Vec3::splat(2.4)).with_clip_sync(),
+        VatPaneControlled::new(1.0, Vec3::splat(2.4)),
     ));
 
     spawn_vat_actor(
         &mut commands,
         "Reference No Interp",
         &assets,
-        VatPlayback::default().with_clip(1).with_time_seconds(0.2),
+        VatPlayback::default()
+            .with_clip_name(support::DEMO_CLIP_GUST)
+            .with_time_seconds(0.2),
         Vec3::new(1.25, 0.0, 0.0),
         Vec3::splat(1.8),
     );
@@ -93,11 +94,20 @@ fn setup(
 
 fn handle_debug_input(
     keys: Res<ButtonInput<KeyCode>>,
+    animations: Res<Assets<saddle_animation_vertex_animation_texture::VatAnimationData>>,
     mut commands: Commands,
     mut state: ResMut<DebugState>,
-    mut query: Query<(Entity, &mut VatPlayback, &mut VatPlaybackTweaks), With<Hero>>,
+    mut query: Query<
+        (
+            Entity,
+            &saddle_animation_vertex_animation_texture::VatAnimationSource,
+            &mut VatPlayback,
+            &mut VatPlaybackTweaks,
+        ),
+        With<Hero>,
+    >,
 ) {
-    let Ok((entity, mut playback, mut tweaks)) = query.single_mut() else {
+    let Ok((entity, source, mut playback, mut tweaks)) = query.single_mut() else {
         return;
     };
 
@@ -111,24 +121,22 @@ fn handle_debug_input(
     }
 
     let requested_clip = if keys.just_pressed(KeyCode::Digit1) {
-        Some(0)
+        Some(support::DEMO_CLIP_IDLE)
     } else if keys.just_pressed(KeyCode::Digit2) {
-        Some(1)
+        Some(support::DEMO_CLIP_GUST)
     } else if keys.just_pressed(KeyCode::Digit3) {
-        Some(2)
+        Some(support::DEMO_CLIP_BURST)
     } else {
         None
     };
 
-    if let Some(clip_index) = requested_clip {
-        if playback.active_clip != clip_index {
-            commands.entity(entity).insert(VatCrossfade::new(
-                playback.active_clip,
-                clip_index,
-                0.45,
-            ));
+    if let Some(clip_name) = requested_clip {
+        if let Some(animation) = animations.get(&source.animation)
+            && playback.active_clip_name(animation) != Some(clip_name)
+            && let Ok(crossfade) = VatCrossfade::to_clip_name(animation, &playback, clip_name, 0.45)
+        {
+            commands.entity(entity).insert(crossfade);
         }
-        state.active_clip = clip_index;
     }
 }
 
@@ -148,19 +156,30 @@ fn record_messages(
 fn update_overlay(
     state: Res<DebugState>,
     mut overlay: Query<&mut Text, With<DebugOverlay>>,
-    hero: Single<&VatPlayback, With<Hero>>,
+    hero: Single<
+        (
+            &VatPlayback,
+            &saddle_animation_vertex_animation_texture::VatAnimationSource,
+        ),
+        With<Hero>,
+    >,
+    animations: Res<Assets<saddle_animation_vertex_animation_texture::VatAnimationData>>,
 ) {
     let Ok(mut text) = overlay.single_mut() else {
         return;
     };
+    let clip_name = animations
+        .get(&hero.1.animation)
+        .and_then(|animation| hero.0.active_clip_name(animation))
+        .unwrap_or("resolving");
     write_overlay(
         &mut text,
         "VAT Debug Lab",
         &format!(
-            "clip: {}\ntime: {:.2}\npaused: {}\ninterpolation: {}\nlast event: {}\nclip finishes: {}\n\nkeys: 1/2/3 switch clips, Space pause, I toggle interpolation",
-            hero.active_clip,
-            hero.time_seconds,
-            !hero.playing,
+            "clip: {}\ntime: {:.2}\npaused: {}\ninterpolation: {}\nlast event: {}\nclip finishes: {}\n\nkeys: 1 idle, 2 gust, 3 burst, Space pause, I toggle interpolation",
+            clip_name,
+            hero.0.time_seconds,
+            !hero.0.playing,
             state.interpolation_enabled,
             if state.last_event.is_empty() {
                 "none".into()
