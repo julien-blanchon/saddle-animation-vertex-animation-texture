@@ -1,9 +1,10 @@
-use std::collections::{HashMap, hash_map::Entry};
+use std::collections::HashMap;
+#[cfg(not(target_arch = "wasm32"))]
+use std::collections::hash_map::Entry;
 
-use bevy::{
-    asset::AssetEvent, camera::visibility::NoFrustumCulling, mesh::MeshTag, prelude::*,
-    render::storage::ShaderStorageBuffer,
-};
+use bevy::{asset::AssetEvent, camera::visibility::NoFrustumCulling, prelude::*};
+#[cfg(not(target_arch = "wasm32"))]
+use bevy::{mesh::MeshTag, render::storage::ShaderStorageBuffer};
 
 use crate::{
     VatAnimationData, VatAnimationSource, VatBoundsMode, VatClipFinished, VatCrossfade,
@@ -51,6 +52,39 @@ pub(crate) struct VatBindingFailure {
 
 #[derive(Component, Debug, Default)]
 pub(crate) struct VatBindingReady;
+
+#[cfg(target_arch = "wasm32")]
+pub(crate) fn ensure_unique_materials_for_web(
+    mut commands: Commands,
+    mut materials: ResMut<Assets<VatMaterial>>,
+    query: Query<(Entity, &MeshMaterial3d<VatMaterial>)>,
+) {
+    let mut grouped: HashMap<AssetId<VatMaterial>, Vec<(Entity, Handle<VatMaterial>)>> =
+        HashMap::new();
+
+    for (entity, material_handle) in &query {
+        grouped
+            .entry(material_handle.id())
+            .or_default()
+            .push((entity, material_handle.0.clone()));
+    }
+
+    for entries in grouped.values_mut() {
+        if entries.len() <= 1 {
+            continue;
+        }
+
+        entries.sort_by_key(|(entity, _)| entity.index());
+        for (entity, material_handle) in entries.iter().skip(1) {
+            let Some(material) = materials.get(material_handle).cloned() else {
+                continue;
+            };
+            commands
+                .entity(*entity)
+                .insert(MeshMaterial3d(materials.add(material)));
+        }
+    }
+}
 
 #[derive(Clone, Debug)]
 pub(crate) struct PendingEvent {
@@ -615,6 +649,7 @@ pub(crate) fn validate_bindings_and_apply_bounds(
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 pub(crate) fn sync_gpu_state(
     mut commands: Commands,
     animations: Res<Assets<VatAnimationData>>,
@@ -710,6 +745,78 @@ pub(crate) fn sync_gpu_state(
         for (index, (entity, _)) in entries.iter().enumerate() {
             commands.entity(*entity).insert(MeshTag(index as u32));
         }
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+pub(crate) fn sync_gpu_state(
+    animations: Res<Assets<VatAnimationData>>,
+    mut materials: ResMut<Assets<VatMaterial>>,
+    query: Query<(
+        &VatAnimationSource,
+        &VatPlayback,
+        Option<&VatCrossfade>,
+        Option<&VatCrossfadeRuntime>,
+        Option<&VatPlaybackTweaks>,
+        &MeshMaterial3d<VatMaterial>,
+        Option<&VatBindingFailure>,
+    )>,
+) {
+    for (
+        source,
+        playback,
+        crossfade,
+        crossfade_runtime,
+        tweaks,
+        material_handle,
+        binding_failure,
+    ) in &query
+    {
+        if binding_failure.is_some() {
+            continue;
+        }
+        let Some(animation) = animations.get(&source.animation) else {
+            continue;
+        };
+        let Some(active_clip_index) = playback.active_clip else {
+            continue;
+        };
+        let Some(active_clip) = animation.clip(active_clip_index) else {
+            continue;
+        };
+        let Some(material) = materials.get_mut(&material_handle.0) else {
+            continue;
+        };
+
+        let disable_interpolation = tweaks.is_some_and(|tweaks| tweaks.disable_interpolation);
+        let wrap_last_frame = matches!(resolve_loop_mode(playback, active_clip), VatLoopMode::Loop);
+
+        let mut instance = sample_gpu_instance(
+            animation,
+            active_clip_index,
+            playback.time_seconds,
+            disable_interpolation,
+            wrap_last_frame,
+        );
+
+        if let (Some(crossfade), Some(crossfade_runtime)) = (crossfade, crossfade_runtime) {
+            instance.options.y = crossfade.weight();
+            if let Some(source_clip) = animation.clip(crossfade_runtime.source_clip) {
+                let secondary = sample_frame_state(
+                    animation,
+                    source_clip,
+                    crossfade_runtime.source_clip,
+                    crossfade_runtime.source_time_seconds,
+                    disable_interpolation,
+                    matches!(resolve_loop_mode(playback, source_clip), VatLoopMode::Loop),
+                );
+                instance.secondary_frames =
+                    Vec4::new(secondary.frame_a, secondary.frame_b, secondary.blend, 0.0);
+                instance.options.z = 1.0;
+            }
+        }
+
+        material.extension.instance = instance;
     }
 }
 

@@ -167,6 +167,8 @@ impl Plugin for VertexAnimationTexturePlugin {
                 self.update_schedule,
                 (
                     systems::validate_bindings_and_apply_bounds,
+                    #[cfg(target_arch = "wasm32")]
+                    systems::ensure_unique_materials_for_web,
                     systems::sync_gpu_state,
                 )
                     .chain()

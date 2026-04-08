@@ -51,6 +51,7 @@ pub struct VatMaterialUniform {
     pub modes: UVec4,
 }
 
+#[cfg_attr(target_arch = "wasm32", allow(private_interfaces))]
 #[derive(Asset, TypePath, AsBindGroup, Clone, Debug)]
 pub struct VatMaterialExt {
     #[texture(100)]
@@ -61,8 +62,12 @@ pub struct VatMaterialExt {
     pub normal_texture: Handle<Image>,
     #[uniform(104)]
     pub uniform: VatMaterialUniform,
+    #[cfg(not(target_arch = "wasm32"))]
     #[storage(105, read_only)]
     pub instances: Handle<ShaderStorageBuffer>,
+    #[cfg(target_arch = "wasm32")]
+    #[uniform(105)]
+    pub instance: VatGpuInstance,
 }
 
 impl MaterialExtension for VatMaterialExt {
@@ -128,7 +133,7 @@ impl VatMaterialExt {
         position_texture: Handle<Image>,
         normal_texture: Option<Handle<Image>>,
         defaults: &VatMaterialDefaults,
-        buffers: &mut Assets<ShaderStorageBuffer>,
+        _buffers: &mut Assets<ShaderStorageBuffer>,
     ) -> Result<Self, VatMaterialBuildError> {
         let (normal_texture_handle, normal_layout) = match &animation.normal_texture {
             VatNormalTexture::None => {
@@ -179,7 +184,10 @@ impl VatMaterialExt {
             position_texture,
             normal_texture: normal_texture_handle,
             uniform,
-            instances: buffers.add(ShaderStorageBuffer::from(vec![VatGpuInstance::default()])),
+            #[cfg(not(target_arch = "wasm32"))]
+            instances: _buffers.add(ShaderStorageBuffer::from(vec![VatGpuInstance::default()])),
+            #[cfg(target_arch = "wasm32")]
+            instance: VatGpuInstance::default(),
         })
     }
 }
@@ -205,16 +213,32 @@ pub fn build_vat_material(
 }
 
 pub(crate) fn load_shaders(app: &mut App) {
+    #[cfg(not(target_arch = "wasm32"))]
     load_internal_asset!(
         app,
         VAT_FORWARD_SHADER_HANDLE,
         "../assets/shaders/vat.wgsl",
         Shader::from_wgsl
     );
+    #[cfg(target_arch = "wasm32")]
+    load_internal_asset!(
+        app,
+        VAT_FORWARD_SHADER_HANDLE,
+        "../assets/shaders/vat_web.wgsl",
+        Shader::from_wgsl
+    );
+    #[cfg(not(target_arch = "wasm32"))]
     load_internal_asset!(
         app,
         VAT_PREPASS_SHADER_HANDLE,
         "../assets/shaders/vat_prepass.wgsl",
+        Shader::from_wgsl
+    );
+    #[cfg(target_arch = "wasm32")]
+    load_internal_asset!(
+        app,
+        VAT_PREPASS_SHADER_HANDLE,
+        "../assets/shaders/vat_prepass_web.wgsl",
         Shader::from_wgsl
     );
 }
