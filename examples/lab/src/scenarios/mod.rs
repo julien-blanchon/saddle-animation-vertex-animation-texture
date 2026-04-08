@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use saddle_bevy_e2e::{action::Action, actions::assertions, scenario::Scenario};
+use saddle_bevy_e2e::{action::Action, actions::{assertions, inspect}, scenario::Scenario};
 
 use crate::{BoundsProbe, CrowdMember, Hero, LabControl, LabDiagnostics};
 
@@ -12,6 +12,7 @@ pub fn list_scenarios() -> Vec<&'static str> {
         "vat_modular_sync",
         "vat_bounds_regression",
         "vat_crossfade",
+        "vat_debug_controls",
     ]
 }
 
@@ -24,6 +25,7 @@ pub fn scenario_by_name(name: &str) -> Option<Scenario> {
         "vat_modular_sync" => Some(build_modular_sync()),
         "vat_bounds_regression" => Some(build_bounds_regression()),
         "vat_crossfade" => Some(build_crossfade()),
+        "vat_debug_controls" => Some(build_debug_controls()),
         _ => None,
     }
 }
@@ -209,5 +211,90 @@ fn build_crossfade() -> Scenario {
             |diagnostics| !diagnostics.crossfade_active && diagnostics.hero_clip_name == "gust",
         ))
         .then(assertions::log_summary("vat_crossfade summary"))
+        .build()
+}
+
+fn build_debug_controls() -> Scenario {
+    Scenario::builder("vat_debug_controls")
+        .description(
+            "Drive the lab through its interactive debug shortcuts, verifying pause, interpolation toggles, and clip selection through real key input.",
+        )
+        .then(Action::WaitFrames(30))
+        .then(Action::HoldKey {
+            key: KeyCode::Space,
+            frames: 1,
+        })
+        .then(Action::WaitUntil {
+            label: "hero paused".into(),
+            condition: Box::new(|world: &World| !world.resource::<LabDiagnostics>().hero_playing),
+            max_frames: 60,
+        })
+        .then(assertions::resource_satisfies::<LabDiagnostics>(
+            "hero playback paused",
+            |diagnostics| !diagnostics.hero_playing,
+        ))
+        .then(inspect::log_resource::<LabDiagnostics>(
+            "vat_debug_controls_paused",
+        ))
+        .then(Action::Screenshot("vat_debug_controls_paused".into()))
+        .then(Action::WaitFrames(1))
+        .then(Action::HoldKey {
+            key: KeyCode::Space,
+            frames: 1,
+        })
+        .then(Action::WaitUntil {
+            label: "hero resumed".into(),
+            condition: Box::new(|world: &World| world.resource::<LabDiagnostics>().hero_playing),
+            max_frames: 60,
+        })
+        .then(Action::HoldKey {
+            key: KeyCode::KeyI,
+            frames: 1,
+        })
+        .then(Action::WaitUntil {
+            label: "interpolation disabled".into(),
+            condition: Box::new(|world: &World| !world.resource::<LabControl>().interpolation_enabled),
+            max_frames: 60,
+        })
+        .then(assertions::resource_satisfies::<LabControl>(
+            "interpolation shortcut toggled off",
+            |control| !control.interpolation_enabled,
+        ))
+        .then(inspect::log_resource::<LabDiagnostics>(
+            "vat_debug_controls_resumed",
+        ))
+        .then(Action::Screenshot("vat_debug_controls_stepped".into()))
+        .then(Action::WaitFrames(1))
+        .then(Action::HoldKey {
+            key: KeyCode::Digit2,
+            frames: 1,
+        })
+        .then(Action::WaitUntil {
+            label: "gust clip active".into(),
+            condition: Box::new(|world: &World| {
+                let diagnostics = world.resource::<LabDiagnostics>();
+                diagnostics.hero_clip_name == "gust" && diagnostics.crossfade_active
+            }),
+            max_frames: 120,
+        })
+        .then(assertions::resource_satisfies::<LabDiagnostics>(
+            "gust crossfade activated",
+            |diagnostics| diagnostics.hero_clip_name == "gust" && diagnostics.crossfade_active,
+        ))
+        .then(Action::Screenshot("vat_debug_controls_transition".into()))
+        .then(Action::WaitUntil {
+            label: "gust crossfade resolved".into(),
+            condition: Box::new(|world: &World| {
+                let diagnostics = world.resource::<LabDiagnostics>();
+                diagnostics.hero_clip_name == "gust" && !diagnostics.crossfade_active
+            }),
+            max_frames: 120,
+        })
+        .then(inspect::log_resource::<LabDiagnostics>(
+            "vat_debug_controls_final",
+        ))
+        .then(Action::Screenshot("vat_debug_controls_final".into()))
+        .then(Action::WaitFrames(1))
+        .then(assertions::log_summary("vat_debug_controls"))
         .build()
 }
