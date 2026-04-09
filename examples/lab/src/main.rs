@@ -1,6 +1,8 @@
 #[cfg(feature = "e2e")]
 mod e2e;
 #[cfg(feature = "e2e")]
+mod lab_e2e_support;
+#[cfg(feature = "e2e")]
 mod scenarios;
 
 use saddle_animation_vertex_animation_texture_example_support as support;

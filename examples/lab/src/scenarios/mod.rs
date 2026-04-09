@@ -2,6 +2,10 @@ use bevy::prelude::*;
 use saddle_bevy_e2e::{action::Action, actions::{assertions, inspect}, scenario::Scenario};
 
 use crate::{BoundsProbe, CrowdMember, Hero, LabControl, LabDiagnostics};
+use crate::lab_e2e_support::{
+    request_clip_name, wait_for_clip_name, wait_for_crossfade_finish, wait_for_crossfade_start,
+    wait_for_paused_state, wait_for_resumed_state,
+};
 
 pub fn list_scenarios() -> Vec<&'static str> {
     vec![
@@ -28,15 +32,6 @@ pub fn scenario_by_name(name: &str) -> Option<Scenario> {
         "vat_debug_controls" => Some(build_debug_controls()),
         _ => None,
     }
-}
-
-fn request_clip_name(clip_name: &'static str) -> Action {
-    Action::Custom(Box::new(move |world: &mut World| {
-        let mut control = world.resource_mut::<LabControl>();
-        control.auto = false;
-        control.requested_clip_name = clip_name.to_owned();
-        control.paused = false;
-    }))
 }
 
 fn build_metadata_default() -> Scenario {
@@ -83,15 +78,7 @@ fn build_multi_clip() -> Scenario {
         )
         .then(Action::WaitFrames(20))
         .then(request_clip_name("burst"))
-        .then(Action::WaitUntil {
-            label: "hero entered burst clip".into(),
-            condition: Box::new(|world: &World| {
-                world
-                    .get_resource::<LabDiagnostics>()
-                    .is_some_and(|diagnostics| diagnostics.hero_clip_name == "burst")
-            }),
-            max_frames: 90,
-        })
+        .then(wait_for_clip_name("burst", 90))
         .then(assertions::resource_satisfies::<LabDiagnostics>(
             "hero switched to burst clip",
             |diagnostics| diagnostics.hero_clip_name == "burst",
@@ -179,15 +166,7 @@ fn build_crossfade() -> Scenario {
         )
         .then(Action::WaitFrames(20))
         .then(request_clip_name("gust"))
-        .then(Action::WaitUntil {
-            label: "crossfade became active".into(),
-            condition: Box::new(|world: &World| {
-                world
-                    .get_resource::<LabDiagnostics>()
-                    .is_some_and(|diagnostics| diagnostics.crossfade_active)
-            }),
-            max_frames: 60,
-        })
+        .then(wait_for_crossfade_start(60))
         .then(assertions::resource_satisfies::<LabDiagnostics>(
             "crossfade is active",
             |diagnostics| diagnostics.crossfade_active,
@@ -195,17 +174,7 @@ fn build_crossfade() -> Scenario {
         .then(Action::Screenshot("vat_crossfade_start".into()))
         .then(Action::WaitFrames(8))
         .then(Action::Screenshot("vat_crossfade_mid".into()))
-        .then(Action::WaitUntil {
-            label: "crossfade resolved".into(),
-            condition: Box::new(|world: &World| {
-                world
-                    .get_resource::<LabDiagnostics>()
-                    .is_some_and(|diagnostics| {
-                        !diagnostics.crossfade_active && diagnostics.hero_clip_name == "gust"
-                    })
-            }),
-            max_frames: 90,
-        })
+        .then(wait_for_crossfade_finish("gust", 90))
         .then(assertions::resource_satisfies::<LabDiagnostics>(
             "hero reached gust clip",
             |diagnostics| !diagnostics.crossfade_active && diagnostics.hero_clip_name == "gust",
@@ -224,11 +193,7 @@ fn build_debug_controls() -> Scenario {
             key: KeyCode::Space,
             frames: 1,
         })
-        .then(Action::WaitUntil {
-            label: "hero paused".into(),
-            condition: Box::new(|world: &World| !world.resource::<LabDiagnostics>().hero_playing),
-            max_frames: 60,
-        })
+        .then(wait_for_paused_state(60))
         .then(assertions::resource_satisfies::<LabDiagnostics>(
             "hero playback paused",
             |diagnostics| !diagnostics.hero_playing,
@@ -242,11 +207,7 @@ fn build_debug_controls() -> Scenario {
             key: KeyCode::Space,
             frames: 1,
         })
-        .then(Action::WaitUntil {
-            label: "hero resumed".into(),
-            condition: Box::new(|world: &World| world.resource::<LabDiagnostics>().hero_playing),
-            max_frames: 60,
-        })
+        .then(wait_for_resumed_state(60))
         .then(Action::HoldKey {
             key: KeyCode::KeyI,
             frames: 1,
